@@ -77,7 +77,7 @@ void Enemy::attack(Player& p) {
     if (p.hasSkill("Ambition")) {
         Card gained = deck.drawCard(); // 简化：获得一张牌
         p.hand.push_back(gained);
-        std::cout << "Ambition Triggered! You claim 1 card:【" << gained.getName() << "】\n";
+        std::cout << "【Ambition】Triggered! You claim 1 card:【" << gained.getName() << "】\n";
         sleepMs(1000);
     }
 }
