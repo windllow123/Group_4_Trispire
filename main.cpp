@@ -29,12 +29,12 @@ int main() {
         displayHealthBar(player, enemy);
         // 死亡判断
         if (player.hp <= 0) {
-            std::cout << "你战败了！游戏结束\n";
+            std::cout << "You Lose! Game Over!\n";
             sleepMs(1000);
             break;
         }
         if (enemy.hp <= 0) {
-            std::cout << "🎉 击败敌人！获得技能：\n";
+            std::cout << "Defeated Enemy! Claimed Skill：\n";
             sleepMs(1000);
             Skill s = Skill::getRandomSkill();
             player.addSkill(s);
@@ -51,29 +51,29 @@ int main() {
         sleepMs(1000);
 
         // 回合开始：重置杀次数+抽2张牌
-        std::cout << "\n=== 回合开始 ===";
+        std::cout << "\n=== Round Start! Fight! ===";
         sleepMs(1000);
         player.resetShaCount();
-        std::cout << "\n抽2张牌！\n";
+        std::cout << "\nDrew 2 Cards！\n";
         sleepMs(1000);
         player.drawTwo();
 
         // 出牌阶段（可多次出牌）
         while (true) {
             player.showHand();
-            std::cout << "\n选择操作：\n0-9 出牌 | -1 结束回合";
-            if (player.hasSkill("苦肉")) std::cout << " | -2 使用苦肉";
-            std::cout << "\n请输入：";
+            std::cout << "\nAct:\n0-9 出牌 | -1 Round End";
+            if (player.hasSkill("Sacrifice")) std::cout << " | -2 used Sacrifice";
+            std::cout << "\nPlease enter：";
             int idx;
             std::cin >> idx;
 
-            if (idx == -1) break; // 结束回合
+            if (idx == -1) break;
             if (idx == -2) {
                 player.useSkillKuRou();
                 continue;
             }
             if (idx < 0 || idx >= static_cast<int>(player.hand.size())) {
-                std::cout << "输入无效！\n";
+                std::cout << "Invalid Input！\n";
                 continue;
             }
 
