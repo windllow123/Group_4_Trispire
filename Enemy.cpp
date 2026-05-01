@@ -57,7 +57,7 @@ void Enemy::showStatus() {
 void Enemy::takeDamage(int dmg) {
     hp -= dmg;
     if (hp < 0) hp = 0;
-    std::cout << "Enemy recieves" << dmg << "points of damages!\n";
+    std::cout << "Enemy recieves " << dmg << " points of damages!\n";
     sleepMs(1000);
 }
 
@@ -72,7 +72,7 @@ void Enemy::attack(Player& p) {
     }
     
     p.hp -= enemy_damage;
-    std::cout << "You recieved" << enemy_damage << "points of damages!\n";
+    std::cout << "You recieved " << enemy_damage << " points of damages!\n";
     sleepMs(1000);
     if (p.hasSkill("Ambition")) {
         Card gained = deck.drawCard(); // 简化：获得一张牌
