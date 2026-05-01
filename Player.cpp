@@ -48,21 +48,21 @@ void Player::resetShaCount() {
 }
 
 void Player::showHand() {
-    std::cout << "\n你的手牌：\n";
+    std::cout << "\nYour Handcards：\n";
     for (size_t i = 0; i < hand.size(); i++) {
         std::cout << i << " - 【" << hand[i].getName() << "】\n";
     }
-    std::cout << "本回合剩余出杀次数：" << max_sha_per_turn - current_sha_used << "\n";
+    std::cout << "Strike chances left：" << max_sha_per_turn - current_sha_used << "\n";
 }
 
 void Player::showStatus() {
-    std::cout << "玩家血量：" << hp << "/" << max_hp << " | 总手牌：" << hand.size() << "张\n";
+    std::cout << "Player Health" << hp << "/" << max_hp << " | Handcards left" << hand.size() << "\n";
 }
 
 void Player::addSkill(const Skill& s) {
     skills.push_back(s);
     applySkillEffects();
-    std::cout << "获得技能：【" << s.name << "】" << s.desc << "\n";
+    std::cout << "Acquired skill【" << s.name << "】" << s.desc << "\n";
     sleepMs(1000);
 }
 
@@ -75,50 +75,50 @@ bool Player::hasSkill(const std::string& skillName) const {
 
 void Player::applySkillEffects() {
     max_sha_per_turn = 2; // 默认
-    if (hasSkill("咆哮")) {
+    if (hasSkill("Warscream")) {
         max_sha_per_turn += 1;
     }
 }
 
 void Player::useSkillKuRou() {
-    if (hp > 1 && hasSkill("苦肉")) {
+    if (hp > 1 && hasSkill("Sacrifice")) {
         hp -= 1;
-        std::cout << "使用【苦肉】，扣除1点血量，获得两张牌！\n";
+        std::cout << "Using【Sacrifice】，Lost 1 point of health，Aquire 2 cards!\n";
         sleepMs(1000);
         drawTwo();
     } else {
-        std::cout << "无法使用苦肉（血量不足或无此技能）。\n";
+        std::cout << "Can't use 【Sacrifice】（not enough health for this skill）\n";
         sleepMs(1000);
     }
 }
 
 void Player::discardExcessCards() {
-    std::cout << "\n玩家弃牌阶段：\n";
+    std::cout << "\nPlay Discarding:\n";
     sleepMs(500);
-    if (hasSkill("克己") && current_sha_used == 0) {
-        std::cout << "克己发动！跳过弃牌阶段。\n";
+    if (hasSkill("Temperance") && current_sha_used == 0) {
+        std::cout << "【Temperance】Triggered！Skipping discard session!\n";
         sleepMs(1000);
         return;
     }
     if (static_cast<int>(hand.size()) <= hp) {
-        std::cout << "手牌数量未超过血量上限，无需弃牌。\n";
+        std::cout << "Handcard less than max health，no need for discard\n";
         sleepMs(500);
         return;
     }
     while (static_cast<int>(hand.size()) > hp) {
-        std::cout << "\n手牌超过血量上限，请选择弃掉的牌：\n";
+        std::cout << "\nHandcard exceeds max health, choose card to lose: \n";
         showHand();
-        std::cout << "输入牌索引：";
+        std::cout << "Enter card index";
         int discard_idx;
         std::cin >> discard_idx;
         if (discard_idx >= 0 && discard_idx < static_cast<int>(hand.size())) {
             Card c = hand[discard_idx];
             deck.discardCard(c);
             hand.erase(hand.begin() + discard_idx);
-            std::cout << "弃掉【" << c.getName() << "】\n";
+            std::cout << "Discarded【" << c.getName() << "】\n";
             sleepMs(500);
         } else {
-            std::cout << "输入无效！\n";
+            std::cout << "Invalid Input!\n";
         }
     }
 }
@@ -127,13 +127,13 @@ bool Player::respondToAttack() {
     // Check for dodge cards in hand
     for (size_t i = 0; i < hand.size(); i++) {
         if (hand[i].type == CardType::SHAN) {
-            std::cout << "\n你有闪卡！是否现在使用来躲避？(0-" << (hand.size() - 1) << ")或-1不躲避: ";
+            std::cout << "\nYou have 【Dodge】！Use it to avoid damage？(0-" << (hand.size() - 1) << ")or -1 to take damage: ";
             int response_idx;
             std::cin >> response_idx;
             
             if (response_idx >= 0 && response_idx < static_cast<int>(hand.size()) && 
                 hand[response_idx].type == CardType::SHAN) {
-                std::cout << "你立即使用【闪】躲避敌人的攻击！\n";
+                std::cout << "You used【Dodge】to avoid damage from enemy！\n";
                 sleepMs(1000);
                 deck.discardCard(hand[response_idx]);
                 hand.erase(hand.begin() + response_idx);
