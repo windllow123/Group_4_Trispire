@@ -92,6 +92,9 @@ int main() {
                 continue;
             }
 
+            clearScreen();
+            displayHealthBar(player, enemy);
+            
             // 打出卡牌
             player.deck.discardCard(c);
             player.hand.erase(player.hand.begin() + idx);
