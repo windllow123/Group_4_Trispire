@@ -61,8 +61,8 @@ int main() {
         // 出牌阶段（可多次出牌）
         while (true) {
             player.showHand();
-            std::cout << "\nAct:\n0-9 出牌 | -1 Round End";
-            if (player.hasSkill("Sacrifice")) std::cout << " | -2 used Sacrifice";
+            std::cout << "\nAct:\n0-9 use card | -1 Round End";
+            if (player.hasSkill("Sacrifice")) std::cout << " | -2 used 【Sacrifice】";
             std::cout << "\nPlease enter：";
             int idx;
             std::cin >> idx;
@@ -80,18 +80,18 @@ int main() {
             Card c = player.hand[idx];
             // 出杀限制
             if (c.type == CardType::SHA && player.current_sha_used >= player.max_sha_per_turn) {
-                std::cout << "本回合出杀次数已用完！\n";
+                std::cout << "You have spent all【strike】chances for this round!\n";
                 continue;
             }
             // 闪卡限制：没有龙胆技能不能出闪
-            if (c.type == CardType::SHAN && !player.hasSkill("龙胆")) {
-                std::cout << "没有龙胆技能，无法在回合中出闪！\n";
+            if (c.type == CardType::SHAN && !player.hasSkill("Dragon Gut")) {
+                std::cout << "You do not acquire skill【Dragon Gut】, can't use【Dodge】in your own round!\n";
                 continue;
             }
             // 龙胆下闪当杀，也受杀的限制
-            if (c.type == CardType::SHAN && player.hasSkill("龙胆") && 
+            if (c.type == CardType::SHAN && player.hasSkill("Dragon Gut") && 
                 player.current_sha_used >= player.max_sha_per_turn) {
-                std::cout << "本回合出杀次数已用完！\n";
+                std::cout << "You have spent all【strike】chances for this round!\n";
                 continue;
             }
 
@@ -101,9 +101,9 @@ int main() {
 
             // 卡牌效果
             if (c.type == CardType::SHA) {
-                if (player.hasSkill("龙胆")) {
+                if (player.hasSkill("Dragon Gut")) {
                     // 杀当闪
-                    std::cout << "使用【杀】（龙胆）进行攻击！\n";
+                    std::cout << "Using【Strike】to attack!\n";
                     sleepMs(1000);
                     if (!enemy.respondToAttack()) {
                         enemy.takeDamage(1);
@@ -111,13 +111,13 @@ int main() {
                 } else {
                     // 正常杀
                     player.current_sha_used++;
-                    std::cout << "\n你对敌人使用【杀】！\n";
+                    std::cout << "\nUsing【Strike】to attack!\n";
                     sleepMs(1000);
                     bool forceHit = false;
-                    if (player.hasSkill("铁骑")) {
+                    if (player.hasSkill("Steel Cavalry")) {
                         if (rand() % 2 == 0) {
                             forceHit = true;
-                            std::cout << "铁骑发动！杀强制命中！\n";
+                            std::cout << "【Steel Cavalry】Triggered! Force hit causing damage!\n";
                             sleepMs(1000);
                         }
                     }
@@ -130,7 +130,7 @@ int main() {
             } else if (c.type == CardType::SHAN) {
                 // 龙胆下闪当杀
                 player.current_sha_used++;
-                std::cout << "\n你对敌人使用【闪】（龙胆）！\n";
+                std::cout << "\nUsing【Dodge】to attack!【Dragon Gut】！\n";
                 sleepMs(1000);
                 if (!enemy.respondToAttack()) {
                     enemy.takeDamage(1);
@@ -138,7 +138,7 @@ int main() {
             } else if (c.type == CardType::TAO) {
                 player.hp += 1;
                 if (player.hp > player.max_hp) player.hp = player.max_hp;
-                std::cout << "使用【桃】，恢复1点血量！\n";
+                std::cout << "Using【Heal】, regenerates 1 hp!\n";
                 sleepMs(1000);
             }
 
@@ -151,7 +151,7 @@ int main() {
         }
 
         if (enemy.hp <= 0) {
-            std::cout << "🎉 击败敌人！获得技能：\n";
+            std::cout << "Enemy Defeated! Acquires: \n";
             sleepMs(1000);
             Skill s = Skill::getRandomSkill();
             player.addSkill(s);
@@ -170,7 +170,7 @@ int main() {
 
         // 敌人回合
         if (enemy.hp > 0) {
-            std::cout << "\n=== 敌人回合 ===";
+            std::cout << "\n=== Enemy Round ===";
             sleepMs(1000);
             enemy.regenerate();
             enemy.drawOne();
