@@ -45,20 +45,17 @@ int main() {
             continue;
         }
 
-        // 状态展示
         player.showStatus();
         enemy.showStatus();
         sleepMs(1000);
 
-        // 回合开始：重置杀次数+抽2张牌
         std::cout << "\n=== Round Start! Fight! ===";
         sleepMs(1000);
         player.resetShaCount();
-        std::cout << "\nDrew 2 Cards！\n";
+        std::cout << "\n2 Cards drawn！\n";
         sleepMs(1000);
         player.drawTwo();
 
-        // 出牌阶段（可多次出牌）
         while (true) {
             player.showHand();
             std::cout << "\nAct:\n0-9 use card | -1 Round End";
