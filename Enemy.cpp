@@ -37,7 +37,7 @@ void Enemy::regenerate() {
     if (regen_amount > 0 && hp < max_hp) {
         int heal = std::min(regen_amount, max_hp - hp);
         hp += heal;
-        std::cout << "敌人回复了" << heal << "点生命！\n";
+        std::cout << "Enemy has healed" << heal << "points of health！\n";
         sleepMs(1000);
     }
 }
@@ -51,19 +51,19 @@ void Enemy::drawOne() {
 }
 
 void Enemy::showStatus() {
-    std::cout << "敌人血量：" << hp << "/" << max_hp << " | 敌人手牌：" << hand.size() << "张 | 可抵挡杀次数：" << shan_defense << "\n";
+    std::cout << "Enemy Health：" << hp << "/" << max_hp << " | Enemy Cards：" << hand.size() << "Cards | Number of Dodges: " << shan_defense << "\n";
 }
 
 void Enemy::takeDamage(int dmg) {
     hp -= dmg;
     if (hp < 0) hp = 0;
-    std::cout << "敌人受到" << dmg << "点伤害！\n";
+    std::cout << "Enemy recieves" << dmg << "points of damages!\n";
     sleepMs(1000);
 }
 
 // 新闪机制：抵消玩家的防御次数
 void Enemy::attack(Player& p) {
-    std::cout << "\n敌人对你使用【杀】！\n";
+    std::cout << "\nEnemy used【Strike】against you！\n";
     sleepMs(1000);
     
     if (p.respondToAttack()) {
@@ -72,21 +72,21 @@ void Enemy::attack(Player& p) {
     }
     
     p.hp -= enemy_damage;
-    std::cout << "你受到" << enemy_damage << "点伤害！\n";
+    std::cout << "You recieved" << enemy_damage << "points of damages!\n";
     sleepMs(1000);
-    if (p.hasSkill("奸雄")) {
+    if (p.hasSkill("Ambition")) {
         Card gained = deck.drawCard(); // 简化：获得一张牌
         p.hand.push_back(gained);
-        std::cout << "奸雄发动！你获得一张牌：【" << gained.getName() << "】\n";
+        std::cout << "Ambition Triggered! You claim 1 card:【" << gained.getName() << "】\n";
         sleepMs(1000);
     }
 }
 
 void Enemy::discardExcessCards() {
-    std::cout << "\n敌人弃牌阶段：\n";
+    std::cout << "\nEnemy Discarding: \n";
     sleepMs(500);
     if (hand.size() <= static_cast<size_t>(hp)) {
-        std::cout << "手牌数量未超过血量上限，无需弃牌。\n";
+        std::cout << "Hand card number less than max health, no need to discard.\n";
         sleepMs(500);
         return;
     }
@@ -94,23 +94,23 @@ void Enemy::discardExcessCards() {
         Card c = hand.back();
         deck.discardCard(c);
         hand.pop_back();
-        std::cout << "敌人弃掉一张牌：【" << c.getName() << "】\n";
+        std::cout << "Enemy discarded 1 card:【" << c.getName() << "】\n";
         sleepMs(500);
     }
 }
 
 void Enemy::playCards() {
-    std::cout << "\n敌人出牌阶段：\n";
+    std::cout << "\nEnemy's Round\n";
     sleepMs(500);
     // 敌人不再主动出闪，而是在受到攻击时立即响应
-    std::cout << "敌人准备应对你的攻击。\n";
+    std::cout << "Enemy prepares for your strike\n";
     sleepMs(500);
 }
 
 bool Enemy::respondToAttack() {
     for (auto it = hand.begin(); it != hand.end(); ++it) {
         if (it->type == CardType::SHAN) {
-            std::cout << "敌人立即使用【闪】来躲避！\n";
+            std::cout << "Enemy uses【Dodge】to avoid damage!\n";
             sleepMs(1000);
             deck.discardCard(*it);
             hand.erase(it);
