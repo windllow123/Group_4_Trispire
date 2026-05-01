@@ -12,6 +12,8 @@ struct Enemy {
     std::vector<Card> hand;
     Deck deck;
     int shan_defense = 0;
+    int enemy_damage = 1;
+    int regen_amount = 0;
 
     Enemy();
     void startDraw();
@@ -21,4 +23,7 @@ struct Enemy {
     void attack(Player& p);
     void discardExcessCards();
     void playCards();
+    void applyDifficulty(int difficulty);
+    void regenerate();
+    bool respondToAttack();
 };

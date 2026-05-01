@@ -1,8 +1,8 @@
 CXX := g++
-CXXFLAGS := -g -Wall -std=c++17
-SRC := main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp
+CXXFLAGS := -Wall -std=c++17
+SRC := main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp menu.cpp
 OBJ := $(SRC:.cpp=.o)
-TARGET := game.exe
+TARGET := game
 
 .PHONY: all clean run
 
