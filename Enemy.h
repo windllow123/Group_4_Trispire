@@ -8,7 +8,7 @@
 struct Enemy {
     int hp = 3;
     int max_hp = 3;
-    std::string name = "小兵";
+    std::string name = "Soldier";
     std::vector<Card> hand;
     Deck deck;
     int shan_defense = 0;
