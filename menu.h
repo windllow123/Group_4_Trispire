@@ -1,7 +1,7 @@
 #ifndef MENU_H
 #define MENU_H
 
-void showMainMenu();
+int showMainMenu();
 int showDifficultyMenu();
 
 #endif

@@ -3,9 +3,9 @@
 void Deck::initPlayerDeck() {
     draw_pile.clear();
     discard_pile.clear();
-    for (int i = 0; i < 4; i++) draw_pile.emplace_back(CardType::SHA);
-    for (int i = 0; i < 4; i++) draw_pile.emplace_back(CardType::SHAN);
-    for (int i = 0; i < 2; i++) draw_pile.emplace_back(CardType::TAO);
+    for (int i = 0; i < 5; i++) draw_pile.emplace_back(CardType::SHA);
+    for (int i = 0; i < 2; i++) draw_pile.emplace_back(CardType::SHAN);
+    for (int i = 0; i < 1; i++) draw_pile.emplace_back(CardType::TAO);
     shuffle();
 }
 
