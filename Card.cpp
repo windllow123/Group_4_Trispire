@@ -2,9 +2,10 @@
 
 Card::Card(CardType t) : type(t) {
     switch (type) {
-        case CardType::SHA: name = "杀"; break;
-        case CardType::SHAN: name = "闪"; break;
-        case CardType::TAO: name = "桃"; break;
+        case CardType::SHA: name = "Strike"; break;
+        case CardType::SHAN: name = "Dodge"; break;
+        case CardType::TAO: name = "Heal"; break;
+        case CardType::TOTEM: name = "The Totem"; break;
     }
 }
 

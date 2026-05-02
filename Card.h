@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-enum class CardType { SHA, SHAN, TAO };
+enum class CardType { SHA, SHAN, TAO, TOTEM };
 
 struct Card {
     CardType type;
