@@ -12,6 +12,8 @@ struct Player {
     int current_sha_used = 0;
     // 闪防御次数
     int shan_defense = 0;
+    double shan_effectiveness = 1.0;
+    double dodge_chance = 0.0;
 
     std::vector<Card> hand;
     std::vector<Skill> skills;
@@ -26,6 +28,8 @@ struct Player {
     void addSkill(const Skill& s);
     bool hasSkill(const std::string& skillName) const;
     void applySkillEffects();
+    void applyDifficulty(int difficulty);
     void useSkillKuRou();
     void discardExcessCards();
+    bool respondToAttack(int requiredShan = 1);
 };
