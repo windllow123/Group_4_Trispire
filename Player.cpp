@@ -1,7 +1,6 @@
 #include "Player.h"
 #include <algorithm>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include "ConsoleUtils.h"
 
@@ -15,6 +14,17 @@ static bool tryParseInt(const std::string& input, int& value) {
 Player::Player() {
     deck.initPlayerDeck();
     startDraw();
+}
+
+Player::~Player() {
+    discardHandToDeck();
+}
+
+void Player::discardHandToDeck() {
+    for (Card* card : hand) {
+        deck.discardCard(card);
+    }
+    hand.clear();
 }
 
 void Player::applyDifficulty(int difficulty) {
@@ -45,11 +55,21 @@ void Player::applyDifficulty(int difficulty) {
 
 // 开局抽3张牌
 void Player::startDraw() {
-    for (int i = 0; i < 3; i++) hand.push_back(deck.drawCard());
+    for (int i = 0; i < 3; i++) {
+        Card* card = deck.drawCard();
+        if (card != nullptr) {
+            hand.push_back(card);
+        }
+    }
 }
 
 void Player::drawTwo() {
-    for (int i = 0; i < 2; i++) hand.push_back(deck.drawCard());
+    for (int i = 0; i < 2; i++) {
+        Card* card = deck.drawCard();
+        if (card != nullptr) {
+            hand.push_back(card);
+        }
+    }
 }
 
 // 重置杀的使用次数
@@ -146,6 +166,10 @@ bool Player::discardExcessCards(Enemy& enemy, bool& returnToLobby) {
             continue;
         }
         Card* c = hand[discard_idx];
+        if (c == nullptr) {
+            hand.erase(hand.begin() + discard_idx);
+            continue;
+        }
         deck.discardCard(c);
         hand.erase(hand.begin() + discard_idx);
         std::cout << "Discarded【" << c->getName() << "】\n";
@@ -160,14 +184,14 @@ void Player::resetRoundEffects() {
 
 bool Player::hasCard(CardType type) const {
     for (const auto& card : hand) {
-        if (card->type == type) return true;
+        if (card != nullptr && card->type == type) return true;
     }
     return false;
 }
 
 bool Player::removeCard(CardType type) {
     for (size_t i = 0; i < hand.size(); ++i) {
-        if (hand[i]->type == type) {
+        if (hand[i] != nullptr && hand[i]->type == type) {
             deck.discardCard(hand[i]);
             hand.erase(hand.begin() + i);
             return true;
@@ -180,7 +204,7 @@ bool Player::respondToAttack(int requiredShan) {
     int shanCount = 0;
     std::vector<size_t> shanIndices;
     for (size_t i = 0; i < hand.size(); ++i) {
-        if (hand[i]->type == CardType::SHAN) {
+        if (hand[i] != nullptr && hand[i]->type == CardType::SHAN) {
             shanIndices.push_back(i);
             shanCount++;
             if (shanCount >= requiredShan) break;
@@ -191,7 +215,7 @@ bool Player::respondToAttack(int requiredShan) {
     std::vector<size_t> shaIndices;
     if (hasSkill("Dragon Gut")) {
         for (size_t i = 0; i < hand.size(); ++i) {
-            if (hand[i]->type == CardType::SHA) {
+            if (hand[i] != nullptr && hand[i]->type == CardType::SHA) {
                 shaIndices.push_back(i);
                 shaCount++;
                 if (shanCount + shaCount >= requiredShan) break;
@@ -207,14 +231,14 @@ bool Player::respondToAttack(int requiredShan) {
                 std::cout << " and " << shaCount << " Strike card(s) usable as Dodge";
             }
             std::cout << ". Do you want to use " << requiredShan << " to dodge? (1=yes, 0=no): ";
-            if (!(std::cin >> choice)) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                choice = -1;
-                std::cout << "Invalid input. Please enter 1 to dodge or 0 to take damage.\n";
-                continue;
-            }
-            if (choice != 0 && choice != 1) {
+            int key = getKey();
+            if (key == '1') {
+                choice = 1;
+                std::cout << "1\n";
+            } else if (key == '0') {
+                choice = 0;
+                std::cout << "0\n";
+            } else {
                 std::cout << "Invalid input. Please enter 1 to dodge or 0 to take damage.\n";
             }
         }
@@ -255,3 +279,4 @@ bool Player::respondToAttack(int requiredShan) {
     }
     return false;
 }
+
