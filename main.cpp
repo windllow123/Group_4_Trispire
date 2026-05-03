@@ -29,6 +29,14 @@ ExitCheckpoint g_exitCheckpoint;
 
 enum class PauseResult { Resume, Lobby };
 
+// Function: Shows pause menu with options to resume, save, or return to lobby
+// Input: saveSlot - active save slot number
+// Input: difficulty - current difficulty
+// Input: currentLevel - current level
+// Input: checkpointHp - HP at level start
+// Input: checkpointMaxHp - max HP at level start
+// Input: checkpointSkills - skills at level start
+// Output: PauseResult indicating Resume or Lobby
 PauseResult returnToLobbyFromPause(int saveSlot, int difficulty, int currentLevel, int checkpointHp,
                                     int checkpointMaxHp, const std::vector<Skill>& checkpointSkills) {
     clearScreen();
@@ -50,8 +58,11 @@ PauseResult returnToLobbyFromPause(int saveSlot, int difficulty, int currentLeve
     }
 }
 
+// Function: Main game entry point, manages game loop, menus, battles
+// Output: 0 on normal exit
 int main() {
     srand(static_cast<unsigned>(time(nullptr)));
+    //system("chcp 65001");
 
     while (true) {
         int choice = showMainMenu();
@@ -417,12 +428,10 @@ int main() {
                     break;
                 }
 
-                // Skill selection after defeating enemy
                 clearScreen();
                 std::cout << "Defeated " << enemy.name << "! Choose a skill:\n";
                 sleepMs(500);
 
-                // Get all available skills that player doesn't have
                 std::vector<Skill> availableSkills;
                 for (int i = 0; i < 6; i++) {
                     Skill s = Skill::getSkillById(i);
@@ -431,7 +440,6 @@ int main() {
                     }
                 }
 
-                // Select up to 3 unique skills
                 std::vector<Skill> choices;
                 int numChoices = std::min(3, (int)availableSkills.size());
                 for (int i = 0; i < numChoices; i++) {
@@ -440,13 +448,11 @@ int main() {
                     availableSkills.erase(availableSkills.begin() + idx);
                 }
 
-                // Display choices
                 for (size_t i = 0; i < choices.size(); i++) {
                     std::cout << (i + 1) << ". " << choices[i].name << ": " << choices[i].desc << "\n";
                 }
                 std::cout << "Press 1-" << choices.size() << " to choose a skill.\n";
 
-                // Get player choice
                 while (true) {
                     int key = getKey();
                     if (key >= '1' && key <= '9' && (key - '1') < (int)choices.size()) {
