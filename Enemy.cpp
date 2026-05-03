@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include <algorithm>
 #include <iostream>
+#include <string>
 #include "Player.h"
 #include "ConsoleUtils.h"
 
@@ -129,8 +130,13 @@ void Enemy::attack(Player& p) {
 
     if (p.hp <= enemy_damage && p.hasCard(CardType::TOTEM)) {
         int choice = -1;
+        std::string prompt = "Your HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+        bool first = true;
         while (choice != 0 && choice != 1) {
-            cout << "\nYour HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+            if (first) {
+                cout << "\n" << prompt;
+                first = false;
+            }
             int key = getKey();
             if (key == '1') {
                 choice = 1;
@@ -139,7 +145,9 @@ void Enemy::attack(Player& p) {
                 choice = 0;
                 cout << "0\n";
             } else {
-                cout << "Invalid input. Please enter 1 to use The Totem or 0 to take the damage.\n";
+                cout << "\rInvalid input. Please enter 1 to use The Totem or 0 to take the damage.";
+                sleepMs(1000);
+                cout << "\r" << prompt;
             }
         }
         if (choice == 1) {
@@ -158,12 +166,15 @@ void Enemy::attack(Player& p) {
     cout << "You recieved " << enemy_damage << " points of damages!\n";
     sleepMs(1000);
     if (p.hasSkill("Ambition")) {
-        Card* gained = deck.drawCard(); // 简化：获得一张牌
-        if (gained != nullptr) {
-            p.hand.push_back(gained);
-            cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
-            sleepMs(1000);
+        for (int i = 0; i < 2; ++i) {
+            Card* gained = deck.drawCard();
+            if (gained != nullptr) {
+                p.hand.push_back(gained);
+            }
         }
+        p.enforceHandLimit();
+        cout << "【Ambition】Triggered! You claim 2 cards.\n";
+        sleepMs(1000);
     }
 }
 

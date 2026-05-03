@@ -3,5 +3,6 @@
 
 int showMainMenu();
 int showDifficultyMenu();
+int showSaveSlotMenu(bool forNewGame);
 
 #endif
