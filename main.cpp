@@ -105,8 +105,7 @@ int main() {
                 continue;
             }
             case 4: {
-                std::cout << "Archive feature not implemented yet.\n";
-                pauseConsole();
+                showArchive();
                 continue;
             }
             case 5:
