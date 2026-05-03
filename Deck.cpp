@@ -44,6 +44,9 @@ Card* Deck::drawCard() {
         discard_pile.clear();
         shuffle();
     }
+    if (draw_pile.empty()) {
+        return nullptr;
+    }
     Card* c = draw_pile.back();
     draw_pile.pop_back();
     return c;
