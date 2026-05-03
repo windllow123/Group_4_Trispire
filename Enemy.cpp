@@ -8,15 +8,19 @@
 
 using namespace std;
 
+// Function: Constructs enemy, initializes deck with enemy cards and draws hand
 Enemy::Enemy() {
     deck.initEnemyDeck();
     startDraw();
 }
 
+// Function: Destroys enemy, returns all hand cards to deck
 Enemy::~Enemy() {
     discardHandToDeck();
 }
 
+// Function: Sets enemy base stats based on selected difficulty
+// Input: difficulty - 0 for easy (HP 3, no regen), 1 for normal (HP 4, regen 1), 2 for hard (HP 5, regen 2)
 void Enemy::applyDifficulty(int difficulty) {
     switch (difficulty) {
         case 0:
@@ -42,6 +46,7 @@ void Enemy::applyDifficulty(int difficulty) {
     }
 }
 
+// Function: Regenerates enemy health by regen_amount if not at max HP
 void Enemy::regenerate() {
     if (regen_amount > 0 && hp < max_hp) {
         int heal = min(regen_amount, max_hp - hp);
@@ -51,6 +56,7 @@ void Enemy::regenerate() {
     }
 }
 
+// Function: Draws initial 2 cards for enemy's starting hand
 void Enemy::startDraw() {
     for (int i = 0; i < 2; i++) {
         Card* card = deck.drawCard();
@@ -60,6 +66,7 @@ void Enemy::startDraw() {
     }
 }
 
+// Function: Draws 1 card from deck and adds to hand
 void Enemy::drawOne() {
     Card* card = deck.drawCard();
     if (card != nullptr) {
@@ -67,6 +74,7 @@ void Enemy::drawOne() {
     }
 }
 
+// Function: Returns all hand cards to the discard pile
 void Enemy::discardHandToDeck() {
     for (Card* card : hand) {
         deck.discardCard(card);
@@ -74,10 +82,13 @@ void Enemy::discardHandToDeck() {
     hand.clear();
 }
 
+// Function: Displays enemy's current HP and hand size
 void Enemy::showStatus() {
     cout << "Enemy Health：" << hp << "/" << max_hp << " | Enemy Cards：" << hand.size() << "Cards | Number of Dodges: " << shan_defense << "\n";
 }
 
+// Function: Applies damage to enemy, cannot go below 0
+// Input: dmg - amount of damage to deal
 void Enemy::takeDamage(int dmg) {
     hp -= dmg;
     if (hp < 0) hp = 0;
@@ -85,7 +96,10 @@ void Enemy::takeDamage(int dmg) {
     sleepMs(1000);
 }
 
-// 新闪机制：抵消玩家的防御次数
+// Function: Executes enemy's full attack sequence with special abilities
+// Input: p - reference to player being attacked
+// Input: ui - reference to battle UI for logging
+// Output: true if attack action was performed
 bool Enemy::attack(Player& p, BattleUI& ui) {
     turnNumber++;
     
@@ -104,14 +118,12 @@ bool Enemy::attack(Player& p, BattleUI& ui) {
     cout << "\nEnemy used【Strike】against you！\n";
     sleepMs(1000);
     
-    // Champion only: activate Eight Trigrams Formation on second enemy attack turn
     if (getsEightTrigramsFormation && turnNumber == 2 && !hasEightTrigrams) {
         hasEightTrigrams = true;
         cout << "Enemy activates Eight Trigrams Formation!\n";
         sleepMs(1000);
     }
 
-    // Eight Trigrams Formation: 50% chance to gain an extra Dodge each turn
     if (hasEightTrigrams && (rand() % 2 == 0)) {
         hand.push_back(g_cardPool.acquire(CardType::SHAN));
         cout << "Eight Trigrams Formation: Enemy gains an extra Dodge!\n";
@@ -126,7 +138,6 @@ bool Enemy::attack(Player& p, BattleUI& ui) {
     }
     
     if (p.respondToAttack(requiredShan)) {
-        // 玩家成功躲闪
         return true;
     }
 
@@ -184,6 +195,7 @@ bool Enemy::attack(Player& p, BattleUI& ui) {
     return true;
 }
 
+// Function: Discards random cards from hand until size does not exceed HP
 void Enemy::discardExcessCards() {
     cout << "\nEnemy Discarding: \n";
     sleepMs(500);
@@ -205,14 +217,16 @@ void Enemy::discardExcessCards() {
     }
 }
 
+// Function: Enemy prepares for player's strike, announces turn
 void Enemy::playCards() {
     cout << "\nEnemy's Round\n";
     sleepMs(500);
-    // 敌人不再主动出闪，而是在受到攻击时立即响应
     cout << "Enemy prepares for your strike\n";
     sleepMs(500);
 }
 
+// Function: Searches hand for a Dodge card to avoid incoming attack
+// Output: true if dodge card was found and used, false otherwise
 bool Enemy::respondToAttack() {
     for (auto it = hand.begin(); it != hand.end(); ++it) {
         if (*it != nullptr && (*it)->type == CardType::SHAN) {
