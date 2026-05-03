@@ -5,6 +5,10 @@
 #include <string>
 #include "ConsoleUtils.h"
 
+// Function: Attempts to parse an integer from a string
+// Input: input - the string to parse
+// Input: value - reference to store the parsed integer
+// Output: true if parsing succeeded
 static bool tryParseInt(const std::string& input, int& value) {
     std::istringstream iss(input);
     if (!(iss >> value)) return false;
@@ -12,15 +16,18 @@ static bool tryParseInt(const std::string& input, int& value) {
     return !(iss >> extra);
 }
 
+// Function: Constructs player, initializes deck and draws starting hand
 Player::Player() {
     deck.initPlayerDeck();
     startDraw();
 }
 
+// Function: Destroys player, returns all hand cards to deck
 Player::~Player() {
     discardHandToDeck();
 }
 
+// Function: Moves all cards from hand to the discard pile
 void Player::discardHandToDeck() {
     for (Card* card : hand) {
         deck.discardCard(card);
@@ -28,6 +35,8 @@ void Player::discardHandToDeck() {
     hand.clear();
 }
 
+// Function: Sets player base stats according to difficulty level
+// Input: difficulty - 0 for easy (HP 8), 1 for normal (HP 6), 2 for hard (HP 5)
 void Player::applyDifficulty(int difficulty) {
     switch (difficulty) {
         case 0:
@@ -54,6 +63,7 @@ void Player::applyDifficulty(int difficulty) {
     applySkillEffects();
 }
 
+// Function: Resets deck and hand for entering a new level
 void Player::resetDeckAndHandForLevelEntry() {
     discardHandToDeck();
     deck.initPlayerDeck();
@@ -63,7 +73,7 @@ void Player::resetDeckAndHandForLevelEntry() {
     startDraw();
 }
 
-// 开局抽3张牌
+// Function: Draws initial 3 cards and enforces hand limit
 void Player::startDraw() {
     for (int i = 0; i < 3; i++) {
         Card* card = deck.drawCard();
@@ -74,6 +84,7 @@ void Player::startDraw() {
     enforceHandLimit();
 }
 
+// Function: Draws 2 cards at turn start and enforces hand limit
 void Player::drawTwo() {
     for (int i = 0; i < 2; i++) {
         Card* card = deck.drawCard();
@@ -84,6 +95,7 @@ void Player::drawTwo() {
     enforceHandLimit();
 }
 
+// Function: Draws 3 cards for Sacrifice skill and enforces hand limit
 void Player::drawThree() {
     for (int i = 0; i < 3; i++) {
         Card* card = deck.drawCard();
@@ -94,11 +106,12 @@ void Player::drawThree() {
     enforceHandLimit();
 }
 
-// 重置杀的使用次数
+// Function: Resets the strike counter to 0 for a new turn
 void Player::resetShaCount() {
     current_sha_used = 0;
 }
 
+// Function: Displays all cards in hand with indices
 void Player::showHand() {
     std::cout << "\nYour Handcards：\n";
     for (size_t i = 0; i < hand.size(); i++) {
@@ -107,10 +120,13 @@ void Player::showHand() {
     std::cout << "Strike chances left：" << max_sha_per_turn - current_sha_used << "\n";
 }
 
+// Function: Displays player HP and hand card count
 void Player::showStatus() {
     std::cout << "Player Health" << hp << "/" << max_hp << " | Handcards left" << hand.size() << "\n";
 }
 
+// Function: Adds a skill to player's skill list and applies effects
+// Input: s - the skill to add
 void Player::addSkill(const Skill& s) {
     skills.push_back(s);
     applySkillEffects();
@@ -118,6 +134,9 @@ void Player::addSkill(const Skill& s) {
     sleepMs(1000);
 }
 
+// Function: Checks if player possesses a skill with the given name
+// Input: skillName - name of skill to search for
+// Output: true if player has the skill
 bool Player::hasSkill(const std::string& skillName) const {
     for (const auto& skill : skills) {
         if (skill.name == skillName) return true;
@@ -125,13 +144,16 @@ bool Player::hasSkill(const std::string& skillName) const {
     return false;
 }
 
+// Function: Updates max strikes per turn based on skills
 void Player::applySkillEffects() {
-    max_sha_per_turn = 2; // 默认
+    max_sha_per_turn = 2;
     if (hasSkill("Warscream")) {
         max_sha_per_turn += 2;
     }
 }
 
+// Function: Uses Sacrifice skill, deducts 1 HP and draws 3 cards
+// Output: true if sacrifice was performed successfully
 bool Player::useSkillKuRou() {
     if (hand.size() > static_cast<size_t>(MAX_HAND_SIZE - 3)) {
         std::cout << "Cannot use【Sacrifice】：need room for 3 cards (hand too full).\n";
@@ -155,6 +177,7 @@ bool Player::useSkillKuRou() {
     return false;
 }
 
+// Function: Discards cards from hand until size is at or below max
 void Player::enforceHandLimit() {
     while (hand.size() > MAX_HAND_SIZE) {
         Card* c = hand.back();
@@ -165,6 +188,10 @@ void Player::enforceHandLimit() {
     }
 }
 
+// Function: Interactive discard phase where player chooses cards to discard
+// Input: enemy - reference to enemy for HP display
+// Input: returnToLobby - set to true if player pauses during discard
+// Output: true if discard occurred
 bool Player::discardExcessCards(Enemy& enemy, bool& returnToLobby) {
     returnToLobby = false;
     std::cout << "\nPlay Discarding:\n";
@@ -210,11 +237,16 @@ bool Player::discardExcessCards(Enemy& enemy, bool& returnToLobby) {
     }
     return false;
 }
+
+// Function: Resets temporary bonuses for the next strike
 void Player::resetRoundEffects() {
     nextStrikeBonusDamage = 0;
     nextStrikeIgnoreDodge = false;
 }
 
+// Function: Checks if player has a card of the specified type in hand
+// Input: type - the card type to search for
+// Output: true if found, false otherwise
 bool Player::hasCard(CardType type) const {
     for (const auto& card : hand) {
         if (card != nullptr && card->type == type) return true;
@@ -222,6 +254,9 @@ bool Player::hasCard(CardType type) const {
     return false;
 }
 
+// Function: Removes first card of specified type from hand
+// Input: type - card type to remove
+// Output: true if card was found and removed
 bool Player::removeCard(CardType type) {
     for (size_t i = 0; i < hand.size(); ++i) {
         if (hand[i] != nullptr && hand[i]->type == type) {
@@ -233,6 +268,9 @@ bool Player::removeCard(CardType type) {
     return false;
 }
 
+// Function: Handles enemy attack response, uses Dodge or Strike (with Dragon Gut)
+// Input: requiredShan - number of dodge cards needed to block
+// Output: true if attack was blocked
 bool Player::respondToAttack(int requiredShan) {
     int shanCount = 0;
     std::vector<size_t> shanIndices;
@@ -319,4 +357,3 @@ bool Player::respondToAttack(int requiredShan) {
     }
     return false;
 }
-
