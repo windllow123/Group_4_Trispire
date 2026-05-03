@@ -1,115 +1,101 @@
-# 杀戮尖塔 × 三国杀
+## Group 4 - Trispire
 
-一个融合了《杀戮尖塔》（Slay the Spire）和《三国杀》（Sanguosha）元素的Roguelike卡牌战斗游戏。
+A text-based roguelike deckbuilder inspired by Slay the Spire and Sanguosha, implemented in C++17. The player battles through escalating encounters, acquires skills, and manages a deck of Strike, Dodge, Heal, and Totem cards.
 
-## 游戏简介
+---
 
-在Ray中，你将扮演一位勇士，通过卡牌战斗击败一系列独特的敌人。每击败一个敌人，你将获得技能，提升自己的能力。游戏结合了Roguelike的永久死亡机制和卡牌构筑的策略深度。
+## Team Members
 
-## 核心玩法
+- Deng Hexuan 3036645662
+- Feng Ruichen 3036662555
+- Guo Youzhi 3036539136
+- Rui Yicheng 3036662244
+- Zhou Chuanyu 3036477833
 
-### 卡牌系统
-- **杀 (Strike)**：对敌人造成1点伤害（前两关）或2-3点伤害（后三关，根据难度）
-- **闪 (Dodge)**：抵消敌人的杀攻击
-- **桃 (Heal)**：恢复1点HP
+All team members have contributed to design, implementation, and documentation.
 
-### 战斗机制
-- **玩家回合**：抽2张牌，出牌（杀限制每回合2次），弃牌至手牌不超过HP
-- **敌人回合**：敌人抽1张牌，攻击玩家，玩家可闪避
-- **胜利条件**：将敌人HP降至0
-- **失败条件**：玩家HP降至0
+---
 
-## 关卡系统
+## Game Description
 
-游戏共有5个关卡，每个关卡都有独特的敌人和挑战：
+The player assumes the role of a hero traversing a sequence of enemy encounters. Each level presents a unique enemy with distinct behavioural patterns. The player begins with a starter deck containing Strike, Dodge, Heal, and The Totem cards. Each turn, the player draws two cards, selects cards to play using keyboard navigation, and ends the turn to allow the enemy to act.
 
-### 关卡1: Unknown Soldier
-- 基础敌人，正常战斗机制
+Victory in a battle rewards the player with a new skill chosen from a random selection of abilities not already owned. Defeat results in run termination unless the player has saved progress to a checkpoint. The game features three difficulty levels (Easy, Normal, Hard) affecting starting health, dodge effectiveness, enemy statistics, and total level count. Save data persists across sessions using a file-based storage system supporting three slots.
 
-### 关卡2: Warrior
-- **第一回合**：激活Unstoppable状态（提示玩家）
-- **第二回合及以后**：所有攻击需要2张闪才能抵消
+---
 
-### 关卡3: Knight
-- **第一回合**：休眠，不进行攻击
-- **第二回合**：发动Heavy Smash
-- **伤害**：3点（简单/普通难度）或3点（困难难度）
+## Special Features
 
-### 关卡4: Champion
-- **第二回合**：激活Eight Trigrams Formation
-- **增益效果**：每回合50%概率自动获得一张闪卡
-- **伤害**：3点（简单/普通难度）或3点（困难难度）
+The Totem Dual Functionality: The Totem card provides two distinct effects. When played, it buffs the next strike with +1 damage and undodgeable property. Additionally, if the player would receive fatal damage while holding The Totem, a prompt appears allowing the player to shatter the card to gain 2 HP and survive.
 
-### 关卡5: Boss
-- **血量**：翻倍（根据难度和关卡计算）
-- **伤害**：3点（简单/普通难度）或3点（困难难度）
-- 正常出牌，无特殊技能
+Interactive Battle Interface: The terminal UI presents three panels displaying player and enemy status, a scrollable battle log, and a 2x4 grid representation of the player's hand with visual selection highlighting.
 
-## 难度等级
+Enemy Variety and Behaviours: Four standard enemy types (Soldier, Warrior, Knight, Champion) plus a Hard-mode Boss each exhibit unique mechanics including Unstoppable state requiring two dodges, first-turn sleep, Heavy Smash, and Eight Trigrams Formation granting bonus dodges.
 
-### Easy（简单）
-- 玩家HP: 8
-- 闪效果: 1.2x
-- 闪躲概率: 25%
-- 敌人基础HP: 3
-- 敌人再生: 0
+Active Skill System: The Sacrifice skill allows the player to lose 1 HP and draw three cards by pressing the Q key during their turn, creating a risk-reward trade-off.
 
-### Normal（普通）
-- 玩家HP: 6
-- 闪效果: 1.0x
-- 闪躲概率: 15%
-- 敌人基础HP: 4
-- 敌人再生: 1
+Checkpoint Save During Pause: Pressing Esc or Space pauses the game and presents options to resume, save the current checkpoint to the active slot, or return to the lobby.
 
-### Hard（困难）
-- 玩家HP: 5
-- 闪效果: 0.6x
-- 闪躲概率: 5%
-- 敌人基础HP: 5
-- 敌人再生: 2
+---
 
-## 技能系统
+## In-Game Controls
 
-击败敌人后随机获得以下技能之一：
+Arrow Keys: Navigate menus and select cards in the hand grid
 
-1. **Steel Cavalry (铁骑)**：50%概率使敌人闪避失败，强制造成伤害
-2. **Warscream (咆哮)**：每回合杀的使用次数+1
-3. **Sacrifice (苦肉)**：主动技能，失去1HP换取2张牌
-4. **Temperance (克己)**：不使用杀时，跳过弃牌阶段
-5. **Ambition (奸雄)**：受到伤害时获得1张牌
-6. **Dragon Gut (龙胆)**：闪可当杀，杀可当闪
+Enter: Confirm selection or play selected card
 
-## 构建和运行
+E: End the player turn early
 
-### 依赖
-- C++17 兼容编译器（推荐 g++）
-- Windows/Linux/Mac 支持
+Q: Activate Sacrifice skill (if acquired)
 
-### 编译
-```bash
-make        # 使用Makefile编译
-# 或手动编译
-g++ -Wall -std=c++17 -o game main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp menu.cpp Level.cpp
-```
+Esc / Space: Pause game (then R to resume, S to save checkpoint)
 
-### 运行
-```bash
-./game      # Linux/Mac
-game.exe    # Windows
-```
+---
 
-## 游戏特色
+## How Coding Elements in Coding Requirements Supports Features in the Game
 
-- **Roguelike元素**：永久死亡，技能累积
-- **策略深度**：卡牌构筑与技能组合
-- **独特敌人**：每个关卡都有专属机制
-- **难度平衡**：三档难度适应不同玩家
-- **跨平台**：控制台界面，支持键盘操作
+| Requirement | Implementation Location |
+|-------------|------------------------|
+| 1. Generation of random events | `Deck::shuffle()` for card draw randomness; random skill selection after enemy defeat; 50% chance for Eight Trigrams Formation dodge gain |
+| 2. Data structures for storing data | `std::vector<Card*>` for hands and piles; `std::vector<Skill>` for player skills; `std::vector<std::string>` for battle logs |
+| 3. Dynamic memory management | `CardPool` class using `std::unique_ptr<Card>` and a free list for card recycling; no memory leaks |
+| 4. File input/output | `SaveLoad` class reads and writes `save_slot_N.txt` files containing difficulty, level, HP, and skill IDs |
+| 5. Program codes in multiple files | 14 source files including `main.cpp`, `BattleUI.cpp`, `Card.cpp`, `Deck.cpp`, `Enemy.cpp`, `Player.cpp`, `Level.cpp`, `menu.cpp`, `HowToPlay.cpp`, `SaveLoad.cpp` and corresponding headers |
+| 6. Multiple difficulty levels | Easy (8 HP, 25% dodge), Normal (6 HP, 15% dodge), Hard (5 HP, 5% dodge); Hard mode features a fifth boss level and increased enemy damage |
 
-## 开发信息
+---
 
-- **语言**：C++
-- **架构**：面向对象设计
-- **平台**：控制台应用
+## Non-Standard Libraries
 
-享受游戏，祝你好运！
+No external libraries are required. The implementation uses only standard C++17 libraries including iostream, fstream, vector, algorithm, random, chrono, thread, sstream, memory, ctime, and cstdlib. Platform-specific terminal control code exists within ConsoleUtils.h using preprocessor directives, but no additional installation is required.
+
+---
+
+## Compilation and Execution Instructions
+
+Prerequisites:
+
+- C++17 compiler (GCC 7 or later, Clang, or MinGW on Windows)
+- Make utility (optional)
+
+Compilation with Make:
+
+make
+
+If Make is not available, compile manually using:
+
+g++ -Wall -std=c++17 -o game main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp menu.cpp Level.cpp SaveLoad.cpp BattleUI.cpp HowToPlay.cpp
+
+This produces an executable named game (or game.exe on Windows).
+
+Execution: Run the compiled program with:
+
+./game
+
+Clean Build: To remove compiled objects and rebuild from scratch, execute:
+
+make clean
+
+Save File Location:
+
+Save data is written to save_slot_1.txt, save_slot_2.txt, and save_slot_3.txt in the working directory. These files may be copied, moved, or deleted manually.
