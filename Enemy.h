@@ -32,7 +32,7 @@ struct Enemy {
     void discardHandToDeck();
     void showStatus();
     void takeDamage(int dmg);
-    void attack(Player& p);
+    bool attack(Player& p);
     void discardExcessCards();
     void playCards();
     void applyDifficulty(int difficulty);

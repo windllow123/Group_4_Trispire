@@ -205,6 +205,25 @@ int main() {
                             helper = "Card selection moved right.";
                             continue;
                         }
+                        if (key == up_key_idx && !player.hand.empty()) {
+                            if (selectedCard >= 4) {
+                                selectedCard -= 4;
+                                helper = "Card selection moved up.";
+                            } else {
+                                helper = "Already at the top row.";
+                            }
+                            continue;
+                        }
+                        if (key == down_key_idx && !player.hand.empty()) {
+                            int visibleCards = std::min(8, static_cast<int>(player.hand.size()));
+                            if (selectedCard < 4 && selectedCard + 4 < visibleCards) {
+                                selectedCard += 4;
+                                helper = "Card selection moved down.";
+                            } else {
+                                helper = "Already at the bottom row.";
+                            }
+                            continue;
+                        }
 
                         if (key == 'e' || key == 'E') {
                             ui.addLog("You ended your turn.");
@@ -356,21 +375,27 @@ int main() {
                         int enemyHpBeforeRegen = enemy.hp;
                         size_t enemyHandBefore = enemy.hand.size();
 
-                        enemy.regenerate();
-                        if (enemy.hp > enemyHpBeforeRegen) {
-                            ui.addLog("Enemy regenerated " + std::to_string(enemy.hp - enemyHpBeforeRegen) + " HP.");
+                        if (round % 5 == 0) {
+                            enemy.regenerate();
+                            if (enemy.hp > enemyHpBeforeRegen) {
+                                ui.addLog("Enemy regenerated " + std::to_string(enemy.hp - enemyHpBeforeRegen) + " HP.");
+                            }
                         }
 
                         enemy.drawOne();
                         ui.addLog("Enemy drew 1 card.");
 
                         enemy.playCards();
-                        enemy.attack(player);
+                        bool enemyActuallyAttacked = enemy.attack(player);
 
-                        if (player.hp < hpBeforeEnemyTurn) {
-                            ui.addLog("Enemy attack dealt " + std::to_string(hpBeforeEnemyTurn - player.hp) + " damage to you.");
+                        if (enemyActuallyAttacked) {
+                            if (player.hp < hpBeforeEnemyTurn) {
+                                ui.addLog("Enemy attack dealt " + std::to_string(hpBeforeEnemyTurn - player.hp) + " damage to you.");
+                            } else {
+                                ui.addLog("Enemy attack dealt no damage.");
+                            }
                         } else {
-                            ui.addLog("Enemy attack dealt no damage.");
+                            ui.addLog("Enemy didn't attack.");
                         }
 
                         enemy.discardExcessCards();

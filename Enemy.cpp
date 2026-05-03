@@ -85,22 +85,23 @@ void Enemy::takeDamage(int dmg) {
 }
 
 // 新闪机制：抵消玩家的防御次数
-void Enemy::attack(Player& p) {
+bool Enemy::attack(Player& p) {
     turnNumber++;
-    cout << "\nEnemy used【Strike】against you！\n";
-    sleepMs(1000);
     
     if (sleepFirstTurn && turnNumber == 1) {
         cout << "Enemy is sleeping this turn.\n";
         sleepMs(1000);
-        return;
+        return false;
     }
     
     if (activateUnstoppableFirstTurn && turnNumber == 1) {
         cout << "Enemy activates Unstoppable state! All attacks now require 2 Dodges to block!\n";
         sleepMs(1000);
-        return;
+        return false;
     }
+    
+    cout << "\nEnemy used【Strike】against you！\n";
+    sleepMs(1000);
     
     // Champion only: activate Eight Trigrams Formation on second enemy attack turn
     if (getsEightTrigramsFormation && turnNumber == 2 && !hasEightTrigrams) {
@@ -125,7 +126,7 @@ void Enemy::attack(Player& p) {
     
     if (p.respondToAttack(requiredShan)) {
         // 玩家成功躲闪
-        return;
+        return true;
     }
 
     if (p.hp <= enemy_damage && p.hasCard(CardType::TOTEM)) {
@@ -156,7 +157,7 @@ void Enemy::attack(Player& p) {
             if (p.hp > p.max_hp) p.hp = p.max_hp;
             cout << "You used The Totem! Claim 2 health and avoid defeat.\n";
             sleepMs(1000);
-            return;
+            return true;
         }
         cout << "You chose not to use The Totem.\n";
         sleepMs(1000);
@@ -176,6 +177,7 @@ void Enemy::attack(Player& p) {
         cout << "【Ambition】Triggered! You claim 2 cards.\n";
         sleepMs(1000);
     }
+    return true;
 }
 
 void Enemy::discardExcessCards() {
