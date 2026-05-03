@@ -4,6 +4,14 @@
 Level::Level(int level) : levelNumber(level) {}
 
 void Level::initializeEnemy(Enemy& enemy, int difficulty) {
+    enemy.turnNumber = 0;
+    enemy.sleepFirstTurn = false;
+    enemy.heavySmashSecondTurn = false;
+    enemy.activateUnstoppableFirstTurn = false;
+    enemy.unstoppableAlways = false;
+    enemy.getsEightTrigramsFormation = false;
+    enemy.hasEightTrigrams = false;
+
     // Base HP based on difficulty
     int baseHp;
     int regen;
@@ -86,7 +94,6 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
 
     // Reinitialize deck and hand
     enemy.discardHandToDeck();
-    enemy.deck = Deck();
     enemy.deck.initEnemyDeck();
     enemy.startDraw();
 }
