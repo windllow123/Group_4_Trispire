@@ -1,4 +1,4 @@
-Ray — A Roguelike Deckbuilder
+Trispire — A Roguelike Deckbuilder
 =============================
 
 A console card-battle roguelike that blends ideas from Slay the Spire and Sanguosha (Legend of the Three Kingdoms). Easy and Normal: four encounters. Hard: five encounters including a final Boss. Earn skills after wins and try to clear the run without dying.
