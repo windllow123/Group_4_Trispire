@@ -1,4 +1,4 @@
-# Ray - 杀戮尖塔 × 三国杀
+# 杀戮尖塔 × 三国杀
 
 一个融合了《杀戮尖塔》（Slay the Spire）和《三国杀》（Sanguosha）元素的Roguelike卡牌战斗游戏。
 
