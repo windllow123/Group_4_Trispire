@@ -437,7 +437,7 @@ void showArchive(){
     printCentered("Press Enter (Space) to return to lobby...", getTerminalWidth());
     while (true) {
         int key = getKey();
-        if (key == enter_key_idx || key == space_key_idx || key == eof_key_idx) {
+        if (key == enter_key_idx || key == space_key_idx) {
             break;
         }
     }

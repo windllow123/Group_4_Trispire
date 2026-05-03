@@ -417,13 +417,46 @@ int main() {
                     break;
                 }
 
-                std::cout << "Defeated " << enemy.name << "! Claimed Skill:\n";
+                // Skill selection after defeating enemy
+                clearScreen();
+                std::cout << "Defeated " << enemy.name << "! Choose a skill:\n";
                 sleepMs(500);
-                Skill s = Skill::getRandomSkill();
-                while (player.hasSkill(s.name)) {
-                    s = Skill::getRandomSkill();
+
+                // Get all available skills that player doesn't have
+                std::vector<Skill> availableSkills;
+                for (int i = 0; i < 6; i++) {
+                    Skill s = Skill::getSkillById(i);
+                    if (!player.hasSkill(s.name)) {
+                        availableSkills.push_back(s);
+                    }
                 }
-                player.addSkill(s);
+
+                // Select up to 3 unique skills
+                std::vector<Skill> choices;
+                int numChoices = std::min(3, (int)availableSkills.size());
+                for (int i = 0; i < numChoices; i++) {
+                    int idx = rand() % availableSkills.size();
+                    choices.push_back(availableSkills[idx]);
+                    availableSkills.erase(availableSkills.begin() + idx);
+                }
+
+                // Display choices
+                for (size_t i = 0; i < choices.size(); i++) {
+                    std::cout << (i + 1) << ". " << choices[i].name << ": " << choices[i].desc << "\n";
+                }
+                std::cout << "Press 1-" << choices.size() << " to choose a skill.\n";
+
+                // Get player choice
+                while (true) {
+                    int key = getKey();
+                    if (key >= '1' && key <= '9' && (key - '1') < (int)choices.size()) {
+                        int choiceIdx = key - '1';
+                        player.addSkill(choices[choiceIdx]);
+                        std::cout << "You chose: " << choices[choiceIdx].name << "\n";
+                        break;
+                    }
+                }
+
                 pauseConsole();
             }
 

@@ -1,5 +1,5 @@
 difficulty:0
-currentLevel:1
+currentLevel:2
 playerHp:8
 playerMaxHp:8
-skills:
+skills:4
