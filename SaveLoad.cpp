@@ -5,6 +5,11 @@
 #include "Player.h"
 
 namespace {
+
+// Function: Attempts to parse an integer from a string
+// Input: text - the string to parse
+// Input: value - reference to store result
+// Output: true if parsing succeeded
 bool tryParseInt(const std::string& text, int& value) {
     std::istringstream iss(text);
     if (!(iss >> value)) return false;
@@ -13,14 +18,28 @@ bool tryParseInt(const std::string& text, int& value) {
 }
 } // namespace
 
+// Function: Returns maximum level for difficulty, Hard has 5 levels
+// Input: difficulty - game difficulty setting
+// Output: maximum level number
 int SaveLoad::maxLevelForDifficulty(int difficulty) {
     return (difficulty == 2) ? 5 : 4;
 }
 
+// Function: Builds file path for a save slot
+// Input: slot - slot number
+// Output: file path string like "save_slot_1.txt"
 std::string SaveLoad::slotFilePath(int slot) {
     return "save_slot_" + std::to_string(slot) + ".txt";
 }
 
+// Function: Writes game state to a text file for the specified slot
+// Input: slot - target slot number
+// Input: difficulty - current difficulty
+// Input: currentLevel - current level
+// Input: playerHp - player health
+// Input: playerMaxHp - player max health
+// Input: skills - acquired skill list
+// Output: true if saved successfully
 bool SaveLoad::saveGame(int slot, int difficulty, int currentLevel, int playerHp, int playerMaxHp,
                         const std::vector<Skill>& skills) {
     if (slot < 1 || slot > SLOT_COUNT) {
@@ -49,6 +68,12 @@ bool SaveLoad::saveGame(int slot, int difficulty, int currentLevel, int playerHp
     return true;
 }
 
+// Function: Reads game state from save file and restores player
+// Input: slot - slot number to load
+// Input: difficulty - reference to store difficulty
+// Input: currentLevel - reference to store level
+// Input: player - reference to player object to restore
+// Output: true if load succeeded
 bool SaveLoad::loadGame(int slot, int& difficulty, int& currentLevel, Player& player) {
     if (slot < 1 || slot > SLOT_COUNT) {
         return false;
@@ -138,6 +163,10 @@ bool SaveLoad::loadGame(int slot, int& difficulty, int& currentLevel, Player& pl
     return true;
 }
 
+// Function: Reads slot metadata without full game load
+// Input: slot - slot number to check
+// Input: info - reference to store slot information
+// Output: true if slot has valid save data
 bool SaveLoad::peekSlot(int slot, SaveSlotInfo& info) {
     info = SaveSlotInfo{};
     if (slot < 1 || slot > SLOT_COUNT) {
@@ -221,6 +250,8 @@ bool SaveLoad::peekSlot(int slot, SaveSlotInfo& info) {
     return true;
 }
 
+// Function: Deletes the save file for the specified slot
+// Input: slot - slot number to clear
 void SaveLoad::clearSaveSlot(int slot) {
     if (slot < 1 || slot > SLOT_COUNT) {
         return;
