@@ -1,8 +1,10 @@
 #include "Enemy.h"
 #include <algorithm>
 #include <iostream>
+#include <string>
 #include "Player.h"
 #include "ConsoleUtils.h"
+#include "BattleUI.h"
 
 using namespace std;
 
@@ -84,22 +86,23 @@ void Enemy::takeDamage(int dmg) {
 }
 
 // 新闪机制：抵消玩家的防御次数
-void Enemy::attack(Player& p) {
+bool Enemy::attack(Player& p, BattleUI& ui) {
     turnNumber++;
-    cout << "\nEnemy used【Strike】against you！\n";
-    sleepMs(1000);
     
     if (sleepFirstTurn && turnNumber == 1) {
         cout << "Enemy is sleeping this turn.\n";
         sleepMs(1000);
-        return;
+        return false;
     }
     
     if (activateUnstoppableFirstTurn && turnNumber == 1) {
         cout << "Enemy activates Unstoppable state! All attacks now require 2 Dodges to block!\n";
         sleepMs(1000);
-        return;
+        return false;
     }
+    
+    cout << "\nEnemy used【Strike】against you！\n";
+    sleepMs(1000);
     
     // Champion only: activate Eight Trigrams Formation on second enemy attack turn
     if (getsEightTrigramsFormation && turnNumber == 2 && !hasEightTrigrams) {
@@ -124,13 +127,18 @@ void Enemy::attack(Player& p) {
     
     if (p.respondToAttack(requiredShan)) {
         // 玩家成功躲闪
-        return;
+        return true;
     }
 
     if (p.hp <= enemy_damage && p.hasCard(CardType::TOTEM)) {
         int choice = -1;
+        std::string prompt = "Your HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+        bool first = true;
         while (choice != 0 && choice != 1) {
-            cout << "\nYour HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+            if (first) {
+                cout << "\n" << prompt;
+                first = false;
+            }
             int key = getKey();
             if (key == '1') {
                 choice = 1;
@@ -139,16 +147,21 @@ void Enemy::attack(Player& p) {
                 choice = 0;
                 cout << "0\n";
             } else {
-                cout << "Invalid input. Please enter 1 to use The Totem or 0 to take the damage.\n";
+                cout << "\rInvalid input. Please enter 1 to use The Totem or 0 to take the damage.";
+                sleepMs(1000);
+                cout << "\r" << prompt;
             }
         }
         if (choice == 1) {
+            clearScreen();
+            cout << "By the power of The Totem, you are rejuvenated!\n";
+            cout << "You gain 2 health and survive the fatal blow!\n";
+            sleepMs(2000);
             p.removeCard(CardType::TOTEM);
             p.hp += 2;
             if (p.hp > p.max_hp) p.hp = p.max_hp;
-            cout << "You used The Totem! Claim 2 health and avoid defeat.\n";
-            sleepMs(1000);
-            return;
+            ui.addLog("The Totem shattered and granted you 2 HP, saving you from defeat!");
+            return true;
         }
         cout << "You chose not to use The Totem.\n";
         sleepMs(1000);
@@ -158,13 +171,17 @@ void Enemy::attack(Player& p) {
     cout << "You recieved " << enemy_damage << " points of damages!\n";
     sleepMs(1000);
     if (p.hasSkill("Ambition")) {
-        Card* gained = deck.drawCard(); // 简化：获得一张牌
-        if (gained != nullptr) {
-            p.hand.push_back(gained);
-            cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
-            sleepMs(1000);
+        for (int i = 0; i < 2; ++i) {
+            Card* gained = deck.drawCard();
+            if (gained != nullptr) {
+                p.hand.push_back(gained);
+            }
         }
+        p.enforceHandLimit();
+        cout << "【Ambition】Triggered! You claim 2 cards.\n";
+        sleepMs(1000);
     }
+    return true;
 }
 
 void Enemy::discardExcessCards() {

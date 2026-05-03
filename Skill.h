@@ -20,7 +20,7 @@ struct Skill {
             case 3: return {3, "Temperance", "If you haven't use any【Strike】in your round，you can skip the discard session for this round."};
             case 4: return {4, "Ambition", "When you takes 1 damage，you can claim 1 card."};
             case 5: return {5, "Dragon Gut", "You can use【Dodge】as【Strike】，use【Strike】as【Dodge】."};
-            default: return {-1, "None", "No effect."};
+            default: return {-1, "None", "Not picking up any skills,No effect."};
         }
     }
 
@@ -32,7 +32,7 @@ struct Skill {
             case 3: return {3, "Temperance", "If you haven't use any【Strike】in your round，you can skip the discard session for this round."};
             case 4: return {4, "Ambition", "When you takes 1 damage，you can claim 1 card."};
             case 5: return {5, "Dragon Gut", "You can use【Dodge】as【Strike】，use【Strike】as【Dodge】."};
-            default: return {-1, "None", "No effect."};
+            default: return {-1, "None", "Not picking up any skills, No effect."};
         }
     }
 };

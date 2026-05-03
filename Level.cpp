@@ -17,17 +17,17 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     int regen;
     int damage;
     switch (difficulty) {
-        case 1: // Easy
+        case 0: // Easy (menu index)
             baseHp = 3;
             regen = 0;
             damage = 1;
             break;
-        case 2: // Normal
+        case 1: // Normal
             baseHp = 4;
             regen = 1;
             damage = 1;
             break;
-        case 3: // Hard
+        case 2: // Hard
             baseHp = 5;
             regen = 2;
             damage = 1;
@@ -42,17 +42,19 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     // HP increases with level
     int hpIncrement = 2; // Each level adds 2 HP
     int calculatedHp = baseHp + (levelNumber - 1) * hpIncrement;
-    // Boss (level 5) has double HP
-    if (levelNumber == 5) {
+    // Boss (level 5, Hard only): double HP — same as original Boss
+    if (levelNumber == 5 && difficulty == 2) {
         calculatedHp *= 2;
     }
     enemy.max_hp = enemy.hp = calculatedHp;
     enemy.regen_amount = regen;
     enemy.enemy_damage = (levelNumber >= 3) ? ((difficulty == 2) ? 2 : 1) : damage; // Subsequent enemies: Hard=3, Easy/Normal=2
 
-    // Set enemy name based on level
-    std::string names[] = {"Unknown Soldier", "Warrior", "Knight", "Champion", "Boss"};
-    if (levelNumber >= 1 && levelNumber <= 5) {
+    // Names: levels 1–4 shared; level 5 is Hard-only Boss
+    std::string names[] = {"Unknown Soldier", "Warrior", "Knight", "Champion"};
+    if (levelNumber == 5 && difficulty == 2) {
+        enemy.name = "Boss";
+    } else if (levelNumber >= 1 && levelNumber <= 4) {
         enemy.name = names[levelNumber - 1];
     } else {
         enemy.name = "Enemy";
@@ -81,10 +83,8 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
         enemy.hasEightTrigrams = false;
     }
 
-    // Special abilities for level 5 (Boss)
-    if (levelNumber == 5) {
-        // Boss: normal abilities, just double HP
-        // Clear any special abilities for normal behavior
+    // Hard level 5 Boss: no Champion/Knight gimmicks; normal fight with double HP (applied above)
+    if (levelNumber == 5 && difficulty == 2) {
         enemy.sleepFirstTurn = false;
         enemy.heavySmashSecondTurn = false;
         enemy.activateUnstoppableFirstTurn = false;

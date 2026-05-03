@@ -5,6 +5,7 @@
 #include "Deck.h"
 
 struct Player;
+class BattleUI;
 
 struct Enemy {
     int hp = 3;
@@ -32,7 +33,7 @@ struct Enemy {
     void discardHandToDeck();
     void showStatus();
     void takeDamage(int dmg);
-    void attack(Player& p);
+    bool attack(Player& p, BattleUI& ui);
     void discardExcessCards();
     void playCards();
     void applyDifficulty(int difficulty);

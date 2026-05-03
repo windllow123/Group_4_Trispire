@@ -295,7 +295,7 @@ void BattleUI::render(const Player& player,
         ++logStartLine;
     }
 
-    std::string cardSectionTitle = "Cards: Left/Right Select | Enter to Play | E to End Turn | SPACE to Pause";
+    std::string cardSectionTitle = "Cards: Left/Right/Up/Down Select | Enter to Play | E to End Turn | SPACE to Pause";
     if (player.hasSkill("Sacrifice")) {
         cardSectionTitle += " | Q to Sacrifice";
     }
