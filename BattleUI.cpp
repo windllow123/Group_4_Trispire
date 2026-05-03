@@ -9,6 +9,11 @@
 #include "ConsoleUtils.h"
 
 namespace {
+
+// Function: Creates a visual health bar using filled and empty block characters
+// Input: maxHealth - maximum health value
+// Input: currentHealth - current health value
+// Output: string with block characters showing health ratio
 std::string healthBar(int maxHealth, int currentHealth) {
     if (maxHealth <= 0) return "";
     currentHealth = std::max(0, std::min(currentHealth, maxHealth));
@@ -24,6 +29,9 @@ std::string healthBar(int maxHealth, int currentHealth) {
     return bar;
 }
 
+// Function: Converts a card type to a short abbreviation for display
+// Input: card - reference to the card
+// Output: short string like "ATK", "DEF", "HEAL", "BUFF", or "UNK"
 std::string cardType(const Card& card) {
     if (card.type == CardType::SHA) return "ATK";
     if (card.type == CardType::SHAN) return "DEF";
@@ -32,6 +40,10 @@ std::string cardType(const Card& card) {
     return "UNK";
 }
 
+// Function: Truncates text to fit within a width, adding "..." if cut
+// Input: text - the string to clip
+// Input: width - maximum characters allowed
+// Output: clipped string with optional ellipsis
 std::string clipText(const std::string& text, int width) {
     if (width <= 0) return "";
     if (static_cast<int>(text.size()) <= width) return text;
@@ -39,6 +51,10 @@ std::string clipText(const std::string& text, int width) {
     return text.substr(0, width - 3) + "...";
 }
 
+// Function: Centers text within a given width by adding spaces on both sides
+// Input: text - the string to center
+// Input: width - total width to center within
+// Output: centered string with equal left and right padding
 std::string centerText(const std::string& text, int width) {
     if (width <= 0) return "";
 
@@ -49,6 +65,10 @@ std::string centerText(const std::string& text, int width) {
     return std::string(leftPadding, ' ') + clippedText + std::string(rightPadding, ' ');
 }
 
+// Function: Wraps long text into multiple lines, breaking at word boundaries
+// Input: text - the string to wrap
+// Input: width - maximum characters per line
+// Output: vector of strings, one per line
 std::vector<std::string> wrapText(const std::string& text, int width) {
     std::vector<std::string> lines;
     if (width <= 0) {
@@ -100,11 +120,19 @@ std::vector<std::string> wrapText(const std::string& text, int width) {
     return lines;
 }
 
+// Function: Pads text on the right with spaces to reach the target width
+// Input: text - the string to pad
+// Input: width - desired total width
+// Output: padded string
 std::string padRight(const std::string& text, int width) {
     if (static_cast<int>(text.size()) >= width) return text;
     return text + std::string(width - static_cast<int>(text.size()), ' ');
 }
 
+// Function: Draws a horizontal line of repeated characters
+// Input: width - length of the line
+// Input: horizontalChar - character to repeat
+// Output: string containing the line
 std::string drawHorizontalLine(int width, const std::string& horizontalChar) {
     if (width <= 0) return "";
 
@@ -115,6 +143,10 @@ std::string drawHorizontalLine(int width, const std::string& horizontalChar) {
     return line;
 }
 
+// Function: Creates a bordered panel using box-drawing characters
+// Input: height - total height in lines including borders
+// Input: innerWidth - width of content area inside borders
+// Output: vector of strings, one per panel row
 std::vector<std::string> makePanel(int height, int innerWidth) {
     std::vector<std::string> panel(height, "│" + std::string(innerWidth, ' ') + "│");
     panel[0] = "┌" + drawHorizontalLine(innerWidth, "─") + "┐";
@@ -122,6 +154,12 @@ std::vector<std::string> makePanel(int height, int innerWidth) {
     return panel;
 }
 
+// Function: Sets the text content of a specific row inside a panel
+// Input: panel - the panel to modify
+// Input: row - row index to set (0-based)
+// Input: height - total height of the panel
+// Input: innerWidth - width of content area
+// Input: text - text to place in the row
 void setPanelRow(std::vector<std::string>& panel,
                  int row,
                  int height,
@@ -131,12 +169,20 @@ void setPanelRow(std::vector<std::string>& panel,
     panel[row] = "│" + padRight(clipText(text, innerWidth), innerWidth) + "│";
 }
 
+// Function: Prints a number of blank lines to the console
+// Input: num - number of newlines to print
 void printSpace(int num) {
     for (int i = 0; i < num; ++i) {
         std::cout << "\n";
     }
 }
 
+// Function: Creates a visual card box for showing a card in the hand area
+// Input: slotNumber - the slot number to show (1-based)
+// Input: card - pointer to the card, or nullptr for empty
+// Input: selected - whether this slot is currently selected
+// Input: boxWidth - total width of the box including borders
+// Output: vector of strings for each line of the box
 std::vector<std::string> cardBoxes(int slotNumber, const Card* card, bool selected, int boxWidth) {
     std::vector<std::string> box;
     int innerWidth = std::max(8, boxWidth - 2);
@@ -173,6 +219,8 @@ std::vector<std::string> cardBoxes(int slotNumber, const Card* card, bool select
 }
 }  // namespace
 
+// Function: Adds a message to the battle log, removing oldest if limit reached
+// Input: message - the log message to add
 void BattleUI::addLog(const std::string& message) {
     logs.push_back(message);
     if (static_cast<int>(logs.size()) > maxLogs) {
@@ -180,6 +228,14 @@ void BattleUI::addLog(const std::string& message) {
     }
 }
 
+// Function: Renders the complete battle interface with status panels and card display
+// Input: player - current player state
+// Input: enemy - current enemy state
+// Input: level - current game level
+// Input: round - current battle round
+// Input: selectedCard - index of highlighted card
+// Input: phase - current phase text
+// Input: helper - bottom instruction text
 void BattleUI::render(const Player& player,
                       const Enemy& enemy,
                       int level,
