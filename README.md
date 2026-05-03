@@ -92,6 +92,8 @@ Execution: Run the compiled program with:
 
 ./game
 
+If the game can't display properly, try enlarging the terminal window or decrease terminal font size (if possible), so the entirety of the game UI can be displayed.
+
 Clean Build: To remove compiled objects and rebuild from scratch, execute:
 
 make clean
