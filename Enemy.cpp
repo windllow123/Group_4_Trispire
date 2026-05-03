@@ -1,12 +1,16 @@
 #include "Enemy.h"
 #include <algorithm>
 #include <iostream>
-#include <limits>
+#include "Player.h"
 #include "ConsoleUtils.h"
 
 Enemy::Enemy() {
     deck.initEnemyDeck();
     startDraw();
+}
+
+Enemy::~Enemy() {
+    discardHandToDeck();
 }
 
 void Enemy::applyDifficulty(int difficulty) {
@@ -44,11 +48,19 @@ void Enemy::regenerate() {
 }
 
 void Enemy::startDraw() {
-    for (int i = 0; i < 2; i++) hand.push_back(deck.drawCard());
+    for (int i = 0; i < 2; i++) {
+        Card* card = deck.drawCard();
+        if (card != nullptr) {
+            hand.push_back(card);
+        }
+    }
 }
 
 void Enemy::drawOne() {
-    hand.push_back(deck.drawCard());
+    Card* card = deck.drawCard();
+    if (card != nullptr) {
+        hand.push_back(card);
+    }
 }
 
 void Enemy::discardHandToDeck() {
@@ -117,18 +129,17 @@ void Enemy::attack(Player& p) {
         int choice = -1;
         while (choice != 0 && choice != 1) {
             std::cout << "\nYour HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
-            if (!(std::cin >> choice)) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid input. Please enter 1 to use The Totem or 0 to take the damage.\n";
-                choice = -1;
-                continue;
-            }
-            if (choice != 0 && choice != 1) {
+            int key = getKey();
+            if (key == '1') {
+                choice = 1;
+                std::cout << "1\n";
+            } else if (key == '0') {
+                choice = 0;
+                std::cout << "0\n";
+            } else {
                 std::cout << "Invalid input. Please enter 1 to use The Totem or 0 to take the damage.\n";
             }
         }
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if (choice == 1) {
             p.removeCard(CardType::TOTEM);
             p.hp += 2;
@@ -146,9 +157,11 @@ void Enemy::attack(Player& p) {
     sleepMs(1000);
     if (p.hasSkill("Ambition")) {
         Card* gained = deck.drawCard(); // 简化：获得一张牌
-        p.hand.push_back(gained);
-        std::cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
-        sleepMs(1000);
+        if (gained != nullptr) {
+            p.hand.push_back(gained);
+            std::cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
+            sleepMs(1000);
+        }
     }
 }
 
@@ -164,7 +177,11 @@ void Enemy::discardExcessCards() {
         Card* c = hand.back();
         deck.discardCard(c);
         hand.pop_back();
-        std::cout << "Enemy discarded 1 card:【" << c->getName() << "】\n";
+        if (c != nullptr) {
+            std::cout << "Enemy discarded 1 card:【" << c->getName() << "】\n";
+        } else {
+            std::cout << "Enemy discarded 1 card.\n";
+        }
         sleepMs(500);
     }
 }
@@ -179,7 +196,7 @@ void Enemy::playCards() {
 
 bool Enemy::respondToAttack() {
     for (auto it = hand.begin(); it != hand.end(); ++it) {
-        if ((*it)->type == CardType::SHAN) {
+        if (*it != nullptr && (*it)->type == CardType::SHAN) {
             std::cout << "Enemy uses【Dodge】to avoid damage!\n";
             sleepMs(1000);
             deck.discardCard(*it);
