@@ -1,8 +1,14 @@
 #include "Level.h"
 #include <string>
 
+// Function: Constructs a level with given number
+// Input: level - the level index (1-based)
 Level::Level(int level) : levelNumber(level) {}
 
+// Function: Sets all enemy properties based on level and difficulty
+// Configures HP, damage, regeneration, name, and special abilities
+// Input: enemy - reference to enemy object to configure
+// Input: difficulty - 0 for easy, 1 for normal, 2 for hard
 void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     enemy.turnNumber = 0;
     enemy.sleepFirstTurn = false;
@@ -12,22 +18,21 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     enemy.getsEightTrigramsFormation = false;
     enemy.hasEightTrigrams = false;
 
-    // Base HP based on difficulty
     int baseHp;
     int regen;
     int damage;
     switch (difficulty) {
-        case 0: // Easy (menu index)
+        case 0:
             baseHp = 3;
             regen = 0;
             damage = 1;
             break;
-        case 1: // Normal
+        case 1:
             baseHp = 4;
             regen = 1;
             damage = 1;
             break;
-        case 2: // Hard
+        case 2:
             baseHp = 5;
             regen = 2;
             damage = 1;
@@ -39,18 +44,15 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
             break;
     }
 
-    // HP increases with level
-    int hpIncrement = 2; // Each level adds 2 HP
+    int hpIncrement = 2;
     int calculatedHp = baseHp + (levelNumber - 1) * hpIncrement;
-    // Boss (level 5, Hard only): double HP — same as original Boss
     if (levelNumber == 5 && difficulty == 2) {
         calculatedHp *= 2;
     }
     enemy.max_hp = enemy.hp = calculatedHp;
     enemy.regen_amount = regen;
-    enemy.enemy_damage = (levelNumber >= 3) ? ((difficulty == 2) ? 2 : 1) : damage; // Subsequent enemies: Hard=3, Easy/Normal=2
+    enemy.enemy_damage = (levelNumber >= 3) ? ((difficulty == 2) ? 2 : 1) : damage;
 
-    // Names: levels 1–4 shared; level 5 is Hard-only Boss
     std::string names[] = {"Unknown Soldier", "Warrior", "Knight", "Champion"};
     if (levelNumber == 5 && difficulty == 2) {
         enemy.name = "Boss";
@@ -60,30 +62,25 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
         enemy.name = "Enemy";
     }
 
-    // Special abilities for level 2
     if (levelNumber == 2) {
         enemy.activateUnstoppableFirstTurn = true;
-        enemy.canUseTao = false; // Though not used, as enemy doesn't play Tao
+        enemy.canUseTao = false;
     }
 
-    // Unstoppable for level 2 and above
     if (levelNumber >= 2) {
         enemy.unstoppableAlways = true;
     }
 
-    // Special abilities for level 3
     if (levelNumber == 3) {
         enemy.sleepFirstTurn = true;
         enemy.heavySmashSecondTurn = true;
     }
 
-    // Special abilities for level 4 (Champion): formation unlocks on 2nd enemy attack turn
     if (levelNumber == 4) {
         enemy.getsEightTrigramsFormation = true;
         enemy.hasEightTrigrams = false;
     }
 
-    // Hard level 5 Boss: no Champion/Knight gimmicks; normal fight with double HP (applied above)
     if (levelNumber == 5 && difficulty == 2) {
         enemy.sleepFirstTurn = false;
         enemy.heavySmashSecondTurn = false;
@@ -92,7 +89,6 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
         enemy.hasEightTrigrams = false;
     }
 
-    // Reinitialize deck and hand
     enemy.discardHandToDeck();
     enemy.deck.initEnemyDeck();
     enemy.startDraw();
