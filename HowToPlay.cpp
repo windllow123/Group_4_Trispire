@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+// Function: Reads and displays game instructions from README.txt with pagination
+// Supports left/right arrow keys to navigate pages, Esc/Space to exit
 void HowToPlay() {
     std::ifstream fin("README.txt");
     if (!fin) {
