@@ -24,6 +24,8 @@ struct Player {
     int nextStrikeBonusDamage = 0;
 
     Player();
+    ~Player();
+    void discardHandToDeck();
     void startDraw();   // 开局抽3张
     void drawTwo();     // 每回合抽2张
     void resetShaCount(); // 回合开始重置杀次数
