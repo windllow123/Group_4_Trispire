@@ -6,6 +6,15 @@
 
 const std::string SAVE_FILE = "save.txt";
 
+namespace {
+bool tryParseInt(const std::string& text, int& value) {
+    std::istringstream iss(text);
+    if (!(iss >> value)) return false;
+    char extra;
+    return !(iss >> extra);
+}
+} // namespace
+
 bool SaveLoad::saveGame(int difficulty, int currentLevel, const Player& player) {
     std::ofstream file(SAVE_FILE);
     if (!file.is_open()) {
@@ -35,6 +44,18 @@ bool SaveLoad::loadGame(int& difficulty, int& currentLevel, Player& player) {
         return false;
     }
 
+    int loadedDifficulty = -1;
+    int loadedLevel = -1;
+    int loadedHp = -1;
+    int loadedMaxHp = -1;
+    std::vector<Skill> loadedSkills;
+
+    bool hasDifficulty = false;
+    bool hasLevel = false;
+    bool hasHp = false;
+    bool hasMaxHp = false;
+    bool hasSkills = false;
+
     std::string line;
     while (std::getline(file, line)) {
         std::istringstream iss(line);
@@ -44,29 +65,58 @@ bool SaveLoad::loadGame(int& difficulty, int& currentLevel, Player& player) {
             std::getline(iss, value);
 
             if (key == "difficulty") {
-                difficulty = std::stoi(value);
+                if (!tryParseInt(value, loadedDifficulty)) return false;
+                hasDifficulty = true;
             } else if (key == "currentLevel") {
-                currentLevel = std::stoi(value);
+                if (!tryParseInt(value, loadedLevel)) return false;
+                hasLevel = true;
             } else if (key == "playerHp") {
-                player.hp = std::stoi(value);
+                if (!tryParseInt(value, loadedHp)) return false;
+                hasHp = true;
             } else if (key == "playerMaxHp") {
-                player.max_hp = std::stoi(value);
+                if (!tryParseInt(value, loadedMaxHp)) return false;
+                hasMaxHp = true;
             } else if (key == "skills") {
-                player.skills.clear();
+                loadedSkills.clear();
                 std::istringstream skillStream(value);
                 std::string skillId;
                 while (std::getline(skillStream, skillId, ',')) {
-                    int id = std::stoi(skillId);
+                    if (skillId.empty()) continue;
+                    int id = -1;
+                    if (!tryParseInt(skillId, id)) return false;
                     Skill s = Skill::getSkillById(id);
                     if (s.id != -1) {
-                        player.skills.push_back(s);
+                        loadedSkills.push_back(s);
                     }
                 }
+                hasSkills = true;
             }
         }
     }
 
     file.close();
+
+    if (!hasDifficulty || !hasLevel || !hasHp || !hasMaxHp || !hasSkills) {
+        return false;
+    }
+    if (loadedDifficulty < 0 || loadedDifficulty > 2) {
+        return false;
+    }
+    if (loadedLevel < 1 || loadedLevel > 5) {
+        return false;
+    }
+    if (loadedMaxHp <= 0 || loadedMaxHp > 100) {
+        return false;
+    }
+    if (loadedHp < 0 || loadedHp > loadedMaxHp) {
+        return false;
+    }
+
+    difficulty = loadedDifficulty;
+    currentLevel = loadedLevel;
+    player.max_hp = loadedMaxHp;
+    player.hp = loadedHp;
+    player.skills = loadedSkills;
     player.applySkillEffects(); // Reapply skills
     return true;
 }
