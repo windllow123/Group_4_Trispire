@@ -7,16 +7,20 @@
 #include <sstream>
 #include <vector>
 
+//menu.cpp-for printing various menu pages in the game, including main menu, difficulty menu, archive, and load menu.
+
 
 
 using namespace std;
 
+//struct for supporting the printing of difficulty menu
 struct Difficulty{
     string color;
     string name;
     vector<string> desc;
 };
 
+//main menu items
 const string menuItems[5]={
     "New Game",
     "Load Game",
@@ -26,11 +30,14 @@ const string menuItems[5]={
 };
 const int menuSize=5; //hard coded, change when adding
 
+//ANSI escape code for printing colors when printing difficulty menu
 const string difficultyColors[3]={
     "\x1b[32m", //ANSI foreground green, easy
     "\x1b[33m", //ANSI foreground yellow, normal
     "\x1b[31m" //ANSI foreground red, hard
 };
+
+//vector containing color, name, and description of each difficulty
 const vector<Difficulty> difficulties ={
     {
         "\x1b[32m",
@@ -66,10 +73,14 @@ const vector<Difficulty> difficulties ={
     }
 };
 
+
 inline int safePadding(int value){
     return value > 0 ? value : 0;
 }
 
+//helper function for printing a line of text centered in a specified width, with whitespace padding on the left
+//input parameters: const string &line (line of text to be printed, stored as std::string), int width (width of space for text to be centered in, stored as int)
+//return: no return value, prints directly on terminal
 void printCentered(const string &line, int width){
     int pad = width - static_cast<int>(line.length());
     int leftPadding = safePadding(pad / 2);
@@ -77,7 +88,9 @@ void printCentered(const string &line, int width){
     cout << string(leftPadding, ' ') << line << string(rightPadding, ' ') << endl;
 }
 
-
+//helper function for printing text contain in a box formed from unicode box drawing characters;
+//input parameters: const string &line (line of text to be printed)
+//return: no return value, prints directly on terminal
 void printBoxedText(const string &line){
     int terminalWidth=getTerminalWidth();
         int maxLineSize=14+4; //max menu item length + padding
@@ -102,13 +115,18 @@ void printBoxedText(const string &line){
         cout<<indent<<"└"<<horizontalLine<<"┘"<<endl;
 }
 
+//helper function for printing a specified number of newline character
+//input parameters: int num (number of newlines to print, expressed as int)
+//return: no return value, prints directly to terminal
 void printSpace(int num){ // helper for printing desired number of newlines
     for (int i=0; i<num; i++){
         cout<<"\n";
     }
 }
 
-
+//function for printing main menu and collecting user input on selected menu choice
+//input paramters: none
+//return value: int representing the selected menu item: 1) New game, 2) Load Game, 3) How to Play, 4) Archive, 5) Quit
 int showMainMenu(){
     int selectedIdx=0;
 
@@ -174,7 +192,9 @@ int showMainMenu(){
     }
 }
 
-
+//helper function for printing difficulty menu and obtaining user input on selected difficulty
+//input parameters: none
+//return value: int representing selected difficulty. 0: easy, 1: normal, 2: hard
 int showDifficultyMenu() {
     int selectedDiff=0; // range 0-2, 2 being hardest
     
@@ -260,12 +280,18 @@ int showDifficultyMenu() {
     
 }
 
+//helper function for convert int representation of difficulty level to string
+//input parameter: int representing difficulty level
+//return value: char*, representing same difficulty level
 static const char* saveDifficultyLabel(int d) {
     if (d == 0) return "Easy";
     if (d == 1) return "Normal";
     return "Hard";
 }
 
+//helper function for printing boxed text for save slots, wider than printBoxedText()
+//input: const string& storing line to be printed), int storing width of terminal), const string& for ANSI escape code for colors), bool selected for selected status
+//return: none, print directly to terminal
 static void printSaveSlotWideBox(const string& line, int terminalWidth, const string& rowColor, bool selected) {
     const string reset = "\033[0m";
     const string selBg = "\033[30;106m";
@@ -309,6 +335,9 @@ static void printSaveSlotWideBox(const string& line, int terminalWidth, const st
     cout << indent << "└" << hline << "┘" << endl;
 }
 
+//function for printing save menu
+//input paramemter: bool storing whether function call is for a new game or not
+//output: int representing selected load file
 int showSaveSlotMenu(bool forNewGame) {
     int selectedIdx = 0;
 
@@ -395,6 +424,9 @@ int showSaveSlotMenu(bool forNewGame) {
     }
 }
 
+//function for printing archive page
+//input: none
+//output: none
 void showArchive(){
     clearScreen();
     printSpace(2);
