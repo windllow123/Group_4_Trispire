@@ -386,7 +386,7 @@ int main() {
                         ui.addLog("Enemy drew 1 card.");
 
                         enemy.playCards();
-                        bool enemyActuallyAttacked = enemy.attack(player);
+                        bool enemyActuallyAttacked = enemy.attack(player, ui);
 
                         if (enemyActuallyAttacked) {
                             if (player.hp < hpBeforeEnemyTurn) {
@@ -414,8 +414,7 @@ int main() {
                 if (player.hp <= 0) {
                     clearScreen();
                     std::cout << "You Lose! Game Over!\n";
-                    std::cout << "Slot " << activeSaveSlot
-                              << " still holds the start-of-this-level checkpoint if you load again.\n";
+                    std::cout << "For a lost game, the slot's record will remain at the level they lost the game.\n";
                     pauseConsole();
                     break;
                 }
@@ -435,7 +434,9 @@ int main() {
             }
 
             if (player.hp > 0) {
-                std::cout << "Congratulations! You have completed all " << lastLevel << " levels!\n";
+                clearScreen();
+                std::cout << "Game Successful! You have completed all levels!\n";
+                std::cout << "For a game already played fully and successful, the slot's record will be emptied.\n";
                 SaveLoad::clearSaveSlot(activeSaveSlot);
                 g_exitCheckpoint = ExitCheckpoint{};
                 pauseConsole();

@@ -4,6 +4,7 @@
 #include <string>
 #include "Player.h"
 #include "ConsoleUtils.h"
+#include "BattleUI.h"
 
 using namespace std;
 
@@ -85,7 +86,7 @@ void Enemy::takeDamage(int dmg) {
 }
 
 // 新闪机制：抵消玩家的防御次数
-bool Enemy::attack(Player& p) {
+bool Enemy::attack(Player& p, BattleUI& ui) {
     turnNumber++;
     
     if (sleepFirstTurn && turnNumber == 1) {
@@ -152,11 +153,14 @@ bool Enemy::attack(Player& p) {
             }
         }
         if (choice == 1) {
+            clearScreen();
+            cout << "By the power of The Totem, you are rejuvenated!\n";
+            cout << "You gain 2 health and survive the fatal blow!\n";
+            sleepMs(2000);
             p.removeCard(CardType::TOTEM);
             p.hp += 2;
             if (p.hp > p.max_hp) p.hp = p.max_hp;
-            cout << "You used The Totem! Claim 2 health and avoid defeat.\n";
-            sleepMs(1000);
+            ui.addLog("The Totem shattered and granted you 2 HP, saving you from defeat!");
             return true;
         }
         cout << "You chose not to use The Totem.\n";
