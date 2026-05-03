@@ -241,7 +241,7 @@ int main() {
                                 enemy.takeDamage(damage);
                                 ui.addLog("You played Strike and dealt " + std::to_string(enemyHpBefore - enemy.hp) + " damage.");
                             }
-                            helper = "Strike succeeded.";
+                            helper = "Striked.";
                         } else if (c->type == CardType::SHAN) {
                             player.current_sha_used++;
 
@@ -261,11 +261,15 @@ int main() {
                                 enemy.takeDamage(damage);
                                 ui.addLog("Dragon Gut attack with Dodge dealt " + std::to_string(enemyHpBefore - enemy.hp) + " damage.");
                             }
-                            helper = "Dragon Gut attack succeeded.";
+                            helper = "Dragon Strike!";
                         } else if (c->type == CardType::TAO) {
                             int oldHp = player.hp;
                             player.hp = std::min(player.max_hp, player.hp + 1);
-                            ui.addLog("You played Heal and recovered " + std::to_string(player.hp - oldHp) + " HP.");
+                            if (player.hp == oldHp) {
+                                ui.addLog("You played Heal, but it has no effect because you are already at max health.");
+                            } else {
+                                ui.addLog("You played Heal and recovered " + std::to_string(player.hp - oldHp) + " HP.");
+                            }
                             helper = "Heal succeeded.";
                         } else if (c->type == CardType::TOTEM) {
                             player.nextStrikeBonusDamage = 1;

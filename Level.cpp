@@ -17,17 +17,17 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     int regen;
     int damage;
     switch (difficulty) {
-        case 0: // Easy
+        case 1: // Easy
             baseHp = 3;
             regen = 0;
             damage = 1;
             break;
-        case 1: // Normal
+        case 2: // Normal
             baseHp = 4;
             regen = 1;
             damage = 1;
             break;
-        case 2: // Hard
+        case 3: // Hard
             baseHp = 5;
             regen = 2;
             damage = 1;
@@ -48,7 +48,7 @@ void Level::initializeEnemy(Enemy& enemy, int difficulty) {
     }
     enemy.max_hp = enemy.hp = calculatedHp;
     enemy.regen_amount = regen;
-    enemy.enemy_damage = (levelNumber >= 3) ? ((difficulty == 2) ? 3 : 2) : damage; // Subsequent enemies: Hard=3, Easy/Normal=2
+    enemy.enemy_damage = (levelNumber >= 3) ? ((difficulty == 2) ? 2 : 1) : damage; // Subsequent enemies: Hard=3, Easy/Normal=2
 
     // Set enemy name based on level
     std::string names[] = {"Unknown Soldier", "Warrior", "Knight", "Champion", "Boss"};

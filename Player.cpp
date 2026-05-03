@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "ConsoleUtils.h"
 
 static bool tryParseInt(const std::string& input, int& value) {
@@ -61,6 +62,7 @@ void Player::startDraw() {
             hand.push_back(card);
         }
     }
+    enforceHandLimit();
 }
 
 void Player::drawTwo() {
@@ -70,6 +72,7 @@ void Player::drawTwo() {
             hand.push_back(card);
         }
     }
+    enforceHandLimit();
 }
 
 // 重置杀的使用次数
@@ -111,11 +114,17 @@ void Player::applySkillEffects() {
 }
 
 bool Player::useSkillKuRou() {
+    if (hand.size() >= MAX_HAND_SIZE) {
+        std::cout << "Cannot use【Sacrifice】，you already have " << MAX_HAND_SIZE << " cards!\n";
+        sleepMs(1000);
+        return false;
+    }
     if (hp > 1 && hasSkill("Sacrifice")) {
         hp -= 1;
         std::cout << "Using【Sacrifice】，Lost 1 point of health，Aquire 2 cards!\n";
         sleepMs(1000);
         drawTwo();
+        enforceHandLimit();
         return true;
     }
     if (hasSkill("Sacrifice")) {
@@ -125,6 +134,16 @@ bool Player::useSkillKuRou() {
     }
     sleepMs(1000);
     return false;
+}
+
+void Player::enforceHandLimit() {
+    while (hand.size() > MAX_HAND_SIZE) {
+        Card* c = hand.back();
+        deck.discardCard(c);
+        hand.pop_back();
+        std::cout << "Hand exceeds " << MAX_HAND_SIZE << " cards, automatically discarded【" << c->getName() << "】\n";
+        sleepMs(500);
+    }
 }
 
 bool Player::discardExcessCards(Enemy& enemy, bool& returnToLobby) {
@@ -225,12 +244,17 @@ bool Player::respondToAttack(int requiredShan) {
 
     if (shanCount >= requiredShan || (hasSkill("Dragon Gut") && shanCount + shaCount >= requiredShan)) {
         int choice = -1;
+        std::string prompt = "You have " + std::to_string(shanCount) + " Dodge card(s)";
+        if (hasSkill("Dragon Gut")) {
+            prompt += " and " + std::to_string(shaCount) + " Strike card(s) usable as Dodge";
+        }
+        prompt += ". Do you want to use " + std::to_string(requiredShan) + " to dodge? (1=yes, 0=no): ";
+        bool first = true;
         while (choice != 0 && choice != 1) {
-            std::cout << "\nYou have " << shanCount << " Dodge card(s)";
-            if (hasSkill("Dragon Gut")) {
-                std::cout << " and " << shaCount << " Strike card(s) usable as Dodge";
+            if (first) {
+                std::cout << "\n" << prompt;
+                first = false;
             }
-            std::cout << ". Do you want to use " << requiredShan << " to dodge? (1=yes, 0=no): ";
             int key = getKey();
             if (key == '1') {
                 choice = 1;
@@ -239,7 +263,9 @@ bool Player::respondToAttack(int requiredShan) {
                 choice = 0;
                 std::cout << "0\n";
             } else {
-                std::cout << "Invalid input. Please enter 1 to dodge or 0 to take damage.\n";
+                std::cout << "\rInvalid input. Please enter 1 to dodge or 0 to take damage.";
+                sleepMs(1000);
+                std::cout << "\r" << prompt;
             }
         }
 

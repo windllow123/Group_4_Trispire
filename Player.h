@@ -7,6 +7,7 @@
 struct Enemy;
 
 struct Player {
+    static const int MAX_HAND_SIZE = 8;
     int hp = 5;
     int max_hp = 5;
     // 杀限制：每回合2次
@@ -37,6 +38,7 @@ struct Player {
     void applySkillEffects();
     void applyDifficulty(int difficulty);
     bool useSkillKuRou();
+    void enforceHandLimit();
     bool discardExcessCards(Enemy& enemy, bool& returnToLobby);
     bool hasCard(CardType type) const;
     bool removeCard(CardType type);

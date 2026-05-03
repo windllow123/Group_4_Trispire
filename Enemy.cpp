@@ -1,8 +1,11 @@
 #include "Enemy.h"
 #include <algorithm>
 #include <iostream>
+#include <string>
 #include "Player.h"
 #include "ConsoleUtils.h"
+
+using namespace std;
 
 Enemy::Enemy() {
     deck.initEnemyDeck();
@@ -40,9 +43,9 @@ void Enemy::applyDifficulty(int difficulty) {
 
 void Enemy::regenerate() {
     if (regen_amount > 0 && hp < max_hp) {
-        int heal = std::min(regen_amount, max_hp - hp);
+        int heal = min(regen_amount, max_hp - hp);
         hp += heal;
-        std::cout << "Enemy has healed" << heal << "points of health！\n";
+        cout << "Enemy has healed" << heal << "points of health！\n";
         sleepMs(1000);
     }
 }
@@ -71,30 +74,30 @@ void Enemy::discardHandToDeck() {
 }
 
 void Enemy::showStatus() {
-    std::cout << "Enemy Health：" << hp << "/" << max_hp << " | Enemy Cards：" << hand.size() << "Cards | Number of Dodges: " << shan_defense << "\n";
+    cout << "Enemy Health：" << hp << "/" << max_hp << " | Enemy Cards：" << hand.size() << "Cards | Number of Dodges: " << shan_defense << "\n";
 }
 
 void Enemy::takeDamage(int dmg) {
     hp -= dmg;
     if (hp < 0) hp = 0;
-    std::cout << "Enemy recieves " << dmg << " points of damages!\n";
+    cout << "Enemy recieves " << dmg << " points of damages!\n";
     sleepMs(1000);
 }
 
 // 新闪机制：抵消玩家的防御次数
 void Enemy::attack(Player& p) {
     turnNumber++;
-    std::cout << "\nEnemy used【Strike】against you！\n";
+    cout << "\nEnemy used【Strike】against you！\n";
     sleepMs(1000);
     
     if (sleepFirstTurn && turnNumber == 1) {
-        std::cout << "Enemy is sleeping this turn.\n";
+        cout << "Enemy is sleeping this turn.\n";
         sleepMs(1000);
         return;
     }
     
     if (activateUnstoppableFirstTurn && turnNumber == 1) {
-        std::cout << "Enemy activates Unstoppable state! All attacks now require 2 Dodges to block!\n";
+        cout << "Enemy activates Unstoppable state! All attacks now require 2 Dodges to block!\n";
         sleepMs(1000);
         return;
     }
@@ -102,21 +105,21 @@ void Enemy::attack(Player& p) {
     // Champion only: activate Eight Trigrams Formation on second enemy attack turn
     if (getsEightTrigramsFormation && turnNumber == 2 && !hasEightTrigrams) {
         hasEightTrigrams = true;
-        std::cout << "Enemy activates Eight Trigrams Formation!\n";
+        cout << "Enemy activates Eight Trigrams Formation!\n";
         sleepMs(1000);
     }
 
     // Eight Trigrams Formation: 50% chance to gain an extra Dodge each turn
     if (hasEightTrigrams && (rand() % 2 == 0)) {
         hand.push_back(g_cardPool.acquire(CardType::SHAN));
-        std::cout << "Eight Trigrams Formation: Enemy gains an extra Dodge!\n";
+        cout << "Eight Trigrams Formation: Enemy gains an extra Dodge!\n";
         sleepMs(1000);
     }
     
     int requiredShan = unstoppableAlways ? 2 : 1;
     
     if (heavySmashSecondTurn && turnNumber == 2) {
-        std::cout << "Heavy Smash!\n";
+        cout << "Heavy Smash!\n";
         sleepMs(1000);
     }
     
@@ -127,49 +130,57 @@ void Enemy::attack(Player& p) {
 
     if (p.hp <= enemy_damage && p.hasCard(CardType::TOTEM)) {
         int choice = -1;
+        std::string prompt = "Your HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+        bool first = true;
         while (choice != 0 && choice != 1) {
-            std::cout << "\nYour HP would drop to zero. Use The Totem to claim 2 health and survive? (1=yes, 0=no): ";
+            if (first) {
+                cout << "\n" << prompt;
+                first = false;
+            }
             int key = getKey();
             if (key == '1') {
                 choice = 1;
-                std::cout << "1\n";
+                cout << "1\n";
             } else if (key == '0') {
                 choice = 0;
-                std::cout << "0\n";
+                cout << "0\n";
             } else {
-                std::cout << "Invalid input. Please enter 1 to use The Totem or 0 to take the damage.\n";
+                cout << "\rInvalid input. Please enter 1 to use The Totem or 0 to take the damage.";
+                sleepMs(1000);
+                cout << "\r" << prompt;
             }
         }
         if (choice == 1) {
             p.removeCard(CardType::TOTEM);
             p.hp += 2;
             if (p.hp > p.max_hp) p.hp = p.max_hp;
-            std::cout << "You used The Totem! Claim 2 health and avoid defeat.\n";
+            cout << "You used The Totem! Claim 2 health and avoid defeat.\n";
             sleepMs(1000);
             return;
         }
-        std::cout << "You chose not to use The Totem.\n";
+        cout << "You chose not to use The Totem.\n";
         sleepMs(1000);
     }
     
     p.hp -= enemy_damage;
-    std::cout << "You recieved " << enemy_damage << " points of damages!\n";
+    cout << "You recieved " << enemy_damage << " points of damages!\n";
     sleepMs(1000);
     if (p.hasSkill("Ambition")) {
         Card* gained = deck.drawCard(); // 简化：获得一张牌
         if (gained != nullptr) {
             p.hand.push_back(gained);
-            std::cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
+            p.enforceHandLimit();
+            cout << "【Ambition】Triggered! You claim 1 card:【" << gained->getName() << "】\n";
             sleepMs(1000);
         }
     }
 }
 
 void Enemy::discardExcessCards() {
-    std::cout << "\nEnemy Discarding: \n";
+    cout << "\nEnemy Discarding: \n";
     sleepMs(500);
     if (hand.size() <= static_cast<size_t>(hp)) {
-        std::cout << "Hand card number less than max health, no need to discard.\n";
+        cout << "Hand card number less than max health, no need to discard.\n";
         sleepMs(500);
         return;
     }
@@ -178,26 +189,26 @@ void Enemy::discardExcessCards() {
         deck.discardCard(c);
         hand.pop_back();
         if (c != nullptr) {
-            std::cout << "Enemy discarded 1 card:【" << c->getName() << "】\n";
+            cout << "Enemy discarded 1 card:【" << c->getName() << "】\n";
         } else {
-            std::cout << "Enemy discarded 1 card.\n";
+            cout << "Enemy discarded 1 card.\n";
         }
         sleepMs(500);
     }
 }
 
 void Enemy::playCards() {
-    std::cout << "\nEnemy's Round\n";
+    cout << "\nEnemy's Round\n";
     sleepMs(500);
     // 敌人不再主动出闪，而是在受到攻击时立即响应
-    std::cout << "Enemy prepares for your strike\n";
+    cout << "Enemy prepares for your strike\n";
     sleepMs(500);
 }
 
 bool Enemy::respondToAttack() {
     for (auto it = hand.begin(); it != hand.end(); ++it) {
         if (*it != nullptr && (*it)->type == CardType::SHAN) {
-            std::cout << "Enemy uses【Dodge】to avoid damage!\n";
+            cout << "Enemy uses【Dodge】to avoid damage!\n";
             sleepMs(1000);
             deck.discardCard(*it);
             hand.erase(it);
