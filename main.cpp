@@ -1,172 +1,360 @@
-#include <iostream>
-#include "ConsoleUtils.h"
+#include <algorithm>
 #include <cstdlib>
+#include <ctime>
+#include <iostream>
+
+#include "BattleUI.h"
 #include "Card.h"
-#include "Player.h"
+#include "ConsoleUtils.h"
 #include "Enemy.h"
+#include "Level.h"
+#include "Player.h"
+#include "SaveLoad.h"
 #include "Skill.h"
 #include "menu.h"
 
+enum class PauseResult { Resume, Lobby };
+
+PauseResult returnToLobbyFromPause(int difficulty, int currentLevel, Player& player) {
+    clearScreen();
+    std::cout << "Game Paused\n";
+    std::cout << "Press R to resume, S to Save, and Esc or Space to return to the lobby...\n";
+    std::cout << "Note: Enemy state and player hand are reset on load.\n";
+    while (true) {
+        int key = getKey();
+        if (key == 'r' || key == 'R') {
+            return PauseResult::Resume;
+        }
+        if (key == 's' || key == 'S') {
+            SaveLoad::saveGame(difficulty, currentLevel, player);
+        }
+        if (key == esc_key_idx || key == space_key_idx) {
+            return PauseResult::Lobby;
+        }
+    }
+}
 
 int main() {
-    //change main menu
-    showMainMenu();
-    //parse input
-    int difficulty;
-    difficulty=showDifficultyMenu();
-    std::cout<<"Selected difficulty: "<<difficulty<<std::endl;
-    pauseConsole();
-
-    Player player;
-    Enemy enemy;
+    srand(static_cast<unsigned>(time(nullptr)));
 
     while (true) {
-        clearScreen();
-        // 死亡判断
-        if (player.hp <= 0) {
-            std::cout << "你战败了！游戏结束\n";
-            sleepMs(1000);
-            break;
-        }
-        if (enemy.hp <= 0) {
-            std::cout << "🎉 击败敌人！获得技能：\n";
-            sleepMs(1000);
-            Skill s = Skill::getRandomSkill();
-            player.addSkill(s);
-            std::cout << "【" << s.name << "】" << s.desc << "\n";
-            sleepMs(1000);
-            enemy = Enemy();
-            pauseConsole();
-            continue;
-        }
+        int choice = showMainMenu();
+        int difficulty = 0;
+        int startLevel = 1;
+        Player player;
 
-        // 状态展示
-        player.showStatus();
-        enemy.showStatus();
-        sleepMs(1000);
-
-        // 回合开始：重置杀次数+抽2张牌
-        std::cout << "\n=== 回合开始 ===";
-        sleepMs(1000);
-        player.resetShaCount();
-        std::cout << "\n抽2张牌！\n";
-        sleepMs(1000);
-        player.drawTwo();
-
-        // 出牌阶段（可多次出牌）
-        while (true) {
-            player.showHand();
-            std::cout << "\n选择操作：\n0-9 出牌 | -1 结束回合";
-            if (player.hasSkill("苦肉")) std::cout << " | -2 使用苦肉";
-            std::cout << "\n请输入：";
-            int idx;
-            std::cin >> idx;
-
-            if (idx == -1) break; // 结束回合
-            if (idx == -2) {
-                player.useSkillKuRou();
-                continue;
-            }
-            if (idx < 0 || idx >= static_cast<int>(player.hand.size())) {
-                std::cout << "输入无效！\n";
-                continue;
-            }
-
-            Card c = player.hand[idx];
-            // 出杀限制
-            if (c.type == CardType::SHA && player.current_sha_used >= player.max_sha_per_turn) {
-                std::cout << "本回合出杀次数已用完！\n";
-                continue;
-            }
-
-            // 打出卡牌
-            player.deck.discardCard(c);
-            player.hand.erase(player.hand.begin() + idx);
-
-            // 卡牌效果
-            if (c.type == CardType::SHA) {
-                if (player.hasSkill("龙胆")) {
-                    // 杀当闪
-                    player.shan_defense++;
-                    std::cout << "使用【杀】（龙胆），获得1次攻击抵挡！\n";
-                    sleepMs(1000);
-                } else {
-                    // 正常杀
-                    player.current_sha_used++;
-                    std::cout << "\n你对敌人使用【杀】！\n";
-                    sleepMs(1000);
-                    bool forceHit = false;
-                    if (enemy.shan_defense > 0 && player.hasSkill("铁骑")) {
-                        if (rand() % 2 == 0) {
-                            forceHit = true;
-                            std::cout << "铁骑发动！杀强制命中！\n";
-                            sleepMs(1000);
-                        }
-                    }
-                    if (enemy.shan_defense > 0 && !forceHit) {
-                        enemy.shan_defense--;
-                        std::cout << "敌人用闪抵挡了这次攻击！\n";
-                        sleepMs(1000);
-                    } else {
-                        enemy.takeDamage(1);
-                    }
+        switch (choice) {
+            case 1: {
+                difficulty = showDifficultyMenu();
+                if (difficulty == -1) {
+                    continue;
                 }
-            } else if (c.type == CardType::SHAN) {
-                if (player.hasSkill("龙胆")) {
-                    // 闪当杀
-                    std::cout << "\n你对敌人使用【闪】（龙胆）！\n";
-                    sleepMs(1000);
-                    if (enemy.shan_defense > 0) {
-                        enemy.shan_defense--;
-                        std::cout << "敌人用闪抵挡了这次攻击！\n";
-                        sleepMs(1000);
-                    } else {
-                        enemy.takeDamage(1);
-                    }
-                } else {
-                    player.shan_defense++;
-                    std::cout << "使用【闪】，获得1次攻击抵挡！\n";
-                    sleepMs(1000);
-                }
-            } else if (c.type == CardType::TAO) {
-                player.hp += 1;
-                if (player.hp > player.max_hp) player.hp = player.max_hp;
-                std::cout << "使用【桃】，恢复1点血量！\n";
-                sleepMs(1000);
-            }
-
-            if (enemy.hp <= 0) {
+                std::cout << "Selected difficulty: " << difficulty << "\n";
+                pauseConsole();
                 break;
             }
+            case 2: {
+                if (SaveLoad::loadGame(difficulty, startLevel, player)) {
+                    std::cout << "Game loaded successfully. Starting from level " << startLevel << "\n";
+                    pauseConsole();
+                } else {
+                    std::cout << "No valid save file found. Starting new game.\n";
+                    difficulty = showDifficultyMenu();
+                    if (difficulty == -1) {
+                        continue;
+                    }
+                    std::cout << "Selected difficulty: " << difficulty << "\n";
+                    pauseConsole();
+                }
+                break;
+            }
+            case 3: {
+                std::cout << "How to Play:\n";
+                std::cout << "This is a card battle game. Use cards to defeat enemies and gain skills.\n";
+                std::cout << "Strike deals damage, Dodge avoids damage, Heal restores HP, and The Totem buffs your next strike or saves you from defeat.\n";
+                pauseConsole();
+                continue;
+            }
+            case 4: {
+                std::cout << "Archive feature not implemented yet.\n";
+                pauseConsole();
+                continue;
+            }
+            case 5:
+                return 0;
+            default: {
+                std::cout << "Invalid choice.\n";
+                pauseConsole();
+                continue;
+            }
         }
 
-        if (enemy.hp <= 0) {
-            std::cout << "🎉 击败敌人！获得技能：\n";
-            sleepMs(1000);
-            Skill s = Skill::getRandomSkill();
-            player.addSkill(s);
-            std::cout << "【" << s.name << "】" << s.desc << "\n";
-            sleepMs(1000);
-            enemy = Enemy();
-            pauseConsole();
-            continue;
+        if (choice == 1 || choice == 2) {
+            if (choice == 1) {
+                player.applyDifficulty(difficulty);
+            }
+
+            bool returnToLobby = false;
+            for (int currentLevel = startLevel; currentLevel <= 5 && !returnToLobby; currentLevel++) {
+                Level level(currentLevel);
+                Enemy enemy;
+                level.initializeEnemy(enemy, difficulty);
+
+                BattleUI ui;
+                int round = 1;
+                ui.addLog("Battle started: Level " + std::to_string(currentLevel) + " vs " + enemy.name + ".");
+                ui.addLog("Use Left/Right + Enter to play cards.");
+
+                while (player.hp > 0 && enemy.hp > 0 && !returnToLobby) {
+                    player.resetShaCount();
+                    player.resetRoundEffects();
+                    player.drawTwo();
+                    ui.addLog("Round " + std::to_string(round) + " started. Drew 2 cards.");
+
+                    int selectedCard = 0;
+                    std::string helper = "Choose a card, press Enter to play, or E to end turn.";
+                    bool endPlayerTurn = false;
+
+                    auto clampSelected = [&]() {
+                        if (player.hand.empty()) {
+                            selectedCard = 0;
+                            return;
+                        }
+                        int visibleCards = std::min(8, static_cast<int>(player.hand.size()));
+                        selectedCard = std::max(0, std::min(selectedCard, visibleCards - 1));
+                    };
+
+                    while (!endPlayerTurn && enemy.hp > 0 && player.hp > 0 && !returnToLobby) {
+                        clampSelected();
+                        ui.render(player, enemy, currentLevel, round, selectedCard, "Your Turn", helper);
+
+                        int key = getKey();
+
+                        if (isPauseKey(key)) {
+                            PauseResult pauseResult = returnToLobbyFromPause(difficulty, currentLevel, player);
+                            if (pauseResult == PauseResult::Lobby) {
+                                returnToLobby = true;
+                                break;
+                            }
+                            helper = "Resumed.";
+                            continue;
+                        }
+
+                        if (key == left_key_idx && !player.hand.empty()) {
+                            int visibleCards = std::min(8, static_cast<int>(player.hand.size()));
+                            selectedCard = (selectedCard + visibleCards - 1) % visibleCards;
+                            helper = "Card selection moved left.";
+                            continue;
+                        }
+                        if (key == right_key_idx && !player.hand.empty()) {
+                            int visibleCards = std::min(8, static_cast<int>(player.hand.size()));
+                            selectedCard = (selectedCard + 1) % visibleCards;
+                            helper = "Card selection moved right.";
+                            continue;
+                        }
+
+                        if (key == 'e' || key == 'E') {
+                            ui.addLog("You ended your turn.");
+                            endPlayerTurn = true;
+                            continue;
+                        }
+
+                        if (key == 'q' || key == 'Q') {
+                            if (!player.hasSkill("Sacrifice")) {
+                                helper = "You do not have Sacrifice.";
+                            } else {
+                                int hpBefore = player.hp;
+                                size_t handBefore = player.hand.size();
+                                bool ok = player.useSkillKuRou();
+                                if (ok) {
+                                    ui.addLog("Sacrifice used: -" + std::to_string(hpBefore - player.hp) + " HP, +" +
+                                              std::to_string(static_cast<int>(player.hand.size() - handBefore)) + " cards.");
+                                    helper = "Sacrifice succeeded.";
+                                } else {
+                                    helper = "Sacrifice failed (likely not enough HP).";
+                                }
+                            }
+                            continue;
+                        }
+
+                        if (key != enter_key_idx) {
+                            helper = "Invalid key. Use Left/Right + Enter, E, Q.";
+                            continue;
+                        }
+
+                        if (player.hand.empty()) {
+                            helper = "No cards to play.";
+                            continue;
+                        }
+
+                        int playIndex = selectedCard;
+                        if (playIndex < 0 || playIndex >= static_cast<int>(player.hand.size())) {
+                            helper = "That card slot is empty.";
+                            continue;
+                        }
+
+                        Card* c = player.hand[playIndex];
+                        if (c == nullptr) {
+                            helper = "Invalid card slot.";
+                            continue;
+                        }
+
+                        if (c->type == CardType::SHA && player.current_sha_used >= player.max_sha_per_turn) {
+                            helper = "No Strike actions left this round.";
+                            continue;
+                        }
+                        if (c->type == CardType::SHAN && !player.hasSkill("Dragon Gut")) {
+                            helper = "Dodge can only attack with Dragon Gut.";
+                            continue;
+                        }
+                        if (c->type == CardType::SHAN && player.hasSkill("Dragon Gut") &&
+                            player.current_sha_used >= player.max_sha_per_turn) {
+                            helper = "No Strike actions left this round.";
+                            continue;
+                        }
+
+                        player.deck.discardCard(c);
+                        player.hand.erase(player.hand.begin() + playIndex);
+
+                        if (c->type == CardType::SHA) {
+                            player.current_sha_used++;
+
+                            int damage = 1;
+                            bool ignoreDodge = false;
+                            if (player.nextStrikeBonusDamage > 0) {
+                                damage += player.nextStrikeBonusDamage;
+                                ignoreDodge = player.nextStrikeIgnoreDodge;
+                                player.resetRoundEffects();
+                            }
+
+                            bool forceHit = false;
+                            if (player.hasSkill("Steel Cavalry") && rand() % 2 == 0) {
+                                forceHit = true;
+                                ui.addLog("Steel Cavalry triggered: enemy dodge ignored.");
+                            }
+
+                            int enemyHpBefore = enemy.hp;
+                            bool dodged = (!forceHit && !ignoreDodge && enemy.respondToAttack());
+                            if (dodged) {
+                                ui.addLog("You played Strike, but enemy dodged.");
+                            } else {
+                                enemy.takeDamage(damage);
+                                ui.addLog("You played Strike and dealt " + std::to_string(enemyHpBefore - enemy.hp) + " damage.");
+                            }
+                            helper = "Striked.";
+                        } else if (c->type == CardType::SHAN) {
+                            player.current_sha_used++;
+
+                            int damage = 1;
+                            bool ignoreDodge = false;
+                            if (player.nextStrikeBonusDamage > 0) {
+                                damage += player.nextStrikeBonusDamage;
+                                ignoreDodge = player.nextStrikeIgnoreDodge;
+                                player.resetRoundEffects();
+                            }
+
+                            int enemyHpBefore = enemy.hp;
+                            bool dodged = (!ignoreDodge && enemy.respondToAttack());
+                            if (dodged) {
+                                ui.addLog("Dragon Gut attack with Dodge was dodged by enemy.");
+                            } else {
+                                enemy.takeDamage(damage);
+                                ui.addLog("Dragon Gut attack with Dodge dealt " + std::to_string(enemyHpBefore - enemy.hp) + " damage.");
+                            }
+                            helper = "Dragon Strike!";
+                        } else if (c->type == CardType::TAO) {
+                            int oldHp = player.hp;
+                            player.hp = std::min(player.max_hp, player.hp + 1);
+                            ui.addLog("You played Heal and recovered " + std::to_string(player.hp - oldHp) + " HP.");
+                            helper = "Heal succeeded.";
+                        } else if (c->type == CardType::TOTEM) {
+                            player.nextStrikeBonusDamage = 1;
+                            player.nextStrikeIgnoreDodge = true;
+                            ui.addLog("You used The Totem: next strike this round is +1 damage and cannot be dodged.");
+                            helper = "Totem buff is active.";
+                        }
+                    }
+
+                    if (returnToLobby || enemy.hp <= 0) {
+                        break;
+                    }
+
+                    bool discardReturnToLobby = false;
+                    if (player.discardExcessCards(enemy, discardReturnToLobby)) {
+                        if (discardReturnToLobby) {
+                            returnToLobby = true;
+                            break;
+                        }
+                    }
+                    ui.addLog("End of player turn: discard phase completed.");
+
+                    if (enemy.hp > 0 && !returnToLobby) {
+                        ui.render(player, enemy, currentLevel, round, selectedCard, "Enemy Turn", "Enemy is acting...");
+                        sleepMs(500);
+
+                        int hpBeforeEnemyTurn = player.hp;
+                        int enemyHpBeforeRegen = enemy.hp;
+                        size_t enemyHandBefore = enemy.hand.size();
+
+                        enemy.regenerate();
+                        if (enemy.hp > enemyHpBeforeRegen) {
+                            ui.addLog("Enemy regenerated " + std::to_string(enemy.hp - enemyHpBeforeRegen) + " HP.");
+                        }
+
+                        enemy.drawOne();
+                        ui.addLog("Enemy drew 1 card.");
+
+                        enemy.playCards();
+                        enemy.attack(player);
+
+                        if (player.hp < hpBeforeEnemyTurn) {
+                            ui.addLog("Enemy attack dealt " + std::to_string(hpBeforeEnemyTurn - player.hp) + " damage to you.");
+                        } else {
+                            ui.addLog("Enemy attack dealt no damage.");
+                        }
+
+                        enemy.discardExcessCards();
+                        if (enemy.hand.size() < enemyHandBefore) {
+                            ui.addLog("Enemy discarded down to hand limit.");
+                        }
+                    }
+
+                    round++;
+                }
+
+                if (returnToLobby) {
+                    break;
+                }
+
+                if (player.hp <= 0) {
+                    clearScreen();
+                    std::cout << "You Lose! Game Over!\n";
+                    SaveLoad::saveGame(difficulty, currentLevel, player);
+                    pauseConsole();
+                    break;
+                }
+
+                std::cout << "Defeated " << enemy.name << "! Claimed Skill:\n";
+                sleepMs(500);
+                Skill s = Skill::getRandomSkill();
+                while (player.hasSkill(s.name)) {
+                    s = Skill::getRandomSkill();
+                }
+                player.addSkill(s);
+                pauseConsole();
+            }
+
+            if (returnToLobby) {
+                continue;
+            }
+
+            if (player.hp > 0) {
+                std::cout << "Congratulations! You have completed all 5 levels!\n";
+                SaveLoad::deleteSaveFile();
+                pauseConsole();
+            }
         }
-
-        // 出牌阶段结束，弃牌阶段
-        player.discardExcessCards();
-
-        // 敌人回合
-        if (enemy.hp > 0) {
-            std::cout << "\n=== 敌人回合 ===";
-            sleepMs(1000);
-            enemy.shan_defense = 0; // 重置闪防御
-            enemy.drawOne();
-            enemy.playCards();
-            enemy.attack(player);
-            enemy.discardExcessCards();
-        }
-
-        pauseConsole();
     }
+
     return 0;
 }

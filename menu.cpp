@@ -64,10 +64,15 @@ const vector<Difficulty> difficulties ={
     }
 };
 
+inline int safePadding(int value){
+    return value > 0 ? value : 0;
+}
+
 void printCentered(const string &line, int width){
-    int leftPadding=(width-line.length())/2;
-    int rightPadding=(width-line.length())-leftPadding;
-    cout << string(leftPadding, ' ')<<line<<string(rightPadding, ' ')<<endl;
+    int pad = width - static_cast<int>(line.length());
+    int leftPadding = safePadding(pad / 2);
+    int rightPadding = safePadding(pad - leftPadding);
+    cout << string(leftPadding, ' ') << line << string(rightPadding, ' ') << endl;
 }
 
 
@@ -77,7 +82,7 @@ void printBoxedText(const string &line){
         int boxWidth=maxLineSize+2;
         int borderSize=boxWidth+2;
 
-        int leftPadding=(terminalWidth-borderSize)/2;
+        int leftPadding=safePadding((terminalWidth-borderSize)/2);
         string indent=string(leftPadding,' ');
 
         string horizontalLine="";
@@ -102,7 +107,7 @@ void printSpace(int num){ // helper for printing desired number of newlines
 }
 
 
-void showMainMenu(){
+int showMainMenu(){
     int selectedIdx=0;
 
     while (true){
@@ -124,7 +129,7 @@ void showMainMenu(){
 )";
         int bannerWidth=76;
         int terminalWidth=getTerminalWidth();
-        int leftPadding=(terminalWidth-bannerWidth)/2;
+        int leftPadding=safePadding((terminalWidth-bannerWidth)/2);
         string indent=string(leftPadding,' ');
         istringstream ss(banner);
         string line;
@@ -154,28 +159,7 @@ void showMainMenu(){
 
         int command=getKey();
         if (command==enter_key_idx){
-            switch (selectedIdx)
-            {
-            case 0:
-                return;//start game
-            case 1:
-                cout<<"Load Game in progress..."<<endl;
-                sleepMs(1000);
-                //loadGame();
-                break;
-            case 2:
-                cout<<"How to Play in progress..."<<endl;
-                sleepMs(1000);
-                //showHowToPlay(); place 玩法介绍 into a page
-                break;
-            case 3:
-                cout<<"Archive in progress..."<<endl;
-                sleepMs(1000);
-                //showArchive(); desc of all skills and cards, optional
-                break;
-            case 4:
-                exit(0);
-            }
+            return selectedIdx + 1; // Return 1-5 for menu choices
         }
         else{
             if (command==up_key_idx){
@@ -199,14 +183,16 @@ int showDifficultyMenu() {
         printSpace(5);
         string title="SELECT YOUR DIFFICULTY";
         string instruction="Use left/right arrow key to adjust and Enter to select";
+        string backInstruction="Press Esc or Space to return to lobby";
         printCentered(title, terminalWidth);
         string underscore="";
             for (int i=0; i<80; i++){
                 underscore+="─";
             }
-        int underscoreLeftPad=(terminalWidth-80)/2;
+        int underscoreLeftPad=safePadding((terminalWidth-80)/2);
         cout << string(underscoreLeftPad, ' ')<<underscore<<endl;
         printCentered(instruction, terminalWidth);
+        printCentered(backInstruction, terminalWidth);
         printSpace(4);
 
         //print bar 
@@ -235,7 +221,7 @@ int showDifficultyMenu() {
                 difficultyBar+="░";
             }
         }
-        int barLeftPad=(terminalWidth-maxBarSize)/2; //cannot use helper as this is unicode
+        int barLeftPad=safePadding((terminalWidth-maxBarSize)/2); //cannot use helper as this is unicode
         for (int i=0; i<3; i++){
             cout<<string(barLeftPad, ' ')<<difficultyBar<<endl;
         }
@@ -243,7 +229,7 @@ int showDifficultyMenu() {
         Difficulty difficultyInfo=difficulties[selectedDiff];
         printBoxedText(difficultyInfo.name);
         printSpace(2);
-        for (int i=0; i<difficulties[selectedDiff].desc.size(); i++){
+        for (size_t i=0; i<difficulties[selectedDiff].desc.size(); i++){
             printCentered(difficulties[selectedDiff].desc[i], terminalWidth);
             printSpace(1);
         }
@@ -252,6 +238,9 @@ int showDifficultyMenu() {
         int command=getKey();
         if (command==enter_key_idx){
             return selectedDiff; 
+        }
+        else if (command==esc_key_idx || command==space_key_idx) {
+            return -1;
         }
         else{
             if (command==right_key_idx){
