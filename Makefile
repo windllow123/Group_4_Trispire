@@ -2,7 +2,7 @@
 # If you see MinGW/Windows symbols while linking on Linux, run: make clean && make
 CXX := g++
 CXXFLAGS := -Wall -std=c++17
-SRC := main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp menu.cpp Level.cpp SaveLoad.cpp
+SRC := main.cpp Card.cpp Deck.cpp Enemy.cpp Player.cpp menu.cpp Level.cpp SaveLoad.cpp BattleUI.cpp
 OBJ := $(SRC:.cpp=.o)
 TARGET := game
 
@@ -55,3 +55,4 @@ help:
 	@echo "  clean-obj - Remove only object files"
 	@echo "  rebuild   - clean then build (fixes stale .o from another OS)"
 	@echo "  help      - Show this help message"
+
