@@ -394,3 +394,52 @@ int showSaveSlotMenu(bool forNewGame) {
         }
     }
 }
+
+void showArchive(){
+    clearScreen();
+    printSpace(2);
+    int terminalWidth=getTerminalWidth();
+
+    string title="ARCHIVE";
+    printCentered(string(title), terminalWidth);
+
+    string underscore="";
+        for (int i=0; i<60; i++){
+            underscore+="─";
+        }
+    int underscoreLeftPad=safePadding((terminalWidth-60)/2);
+    cout << string(underscoreLeftPad, ' ')<<underscore<<endl;
+    printSpace(2);
+    
+    cout<<"  The following list contains all the skills in the game:"<<endl;
+    vector<string> skillList={
+        "Steel Cavalry: Your【Strike】always hits; enemy【Dodge】cannot prevent damage.",
+        "Warscream: You can use 2 extra【Strike】actions each round.",
+        "Sacrifice: Active Skill: Lose 1 hp and claim 3 new cards.",
+        "Ambition: When you take damage from an enemy attack, claim 2 cards.",
+        "Dragon Gut: You can use【Dodge】as【Strike, use【Strike】as【Dodge】."
+    };
+    for (size_t i = 0; i < skillList.size(); ++i) {
+        cout<<"    "<<skillList[i]<<endl;
+    }
+
+    printSpace(6);
+
+    printCentered("HALL OF FAME:", getTerminalWidth());
+    cout << string(underscoreLeftPad, ' ')<<underscore<<endl;
+    printSpace(1);
+    cout<<"      Number of victories in Easy: 0"<<endl;
+    cout<<"      Number of victories in Normal: 0"<<endl;
+    cout<<"      Number of victories in Hard: 0"<<endl;
+
+    printSpace(2);
+
+    printCentered("Press Enter (Space) to return to lobby...", getTerminalWidth());
+    while (true) {
+        int key = getKey();
+        if (key == enter_key_idx || key == space_key_idx || key == eof_key_idx) {
+            break;
+        }
+    }
+}
+
