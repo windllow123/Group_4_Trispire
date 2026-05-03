@@ -13,6 +13,7 @@
 #include "SaveLoad.h"
 #include "Skill.h"
 #include "menu.h"
+#include "HowToPlay.h"
 
 namespace {
 struct ExitCheckpoint {
@@ -100,9 +101,7 @@ int main() {
             }
             case 3: {
                 std::cout << "How to Play:\n";
-                std::cout << "This is a card battle game. Use cards to defeat enemies and gain skills.\n";
-                std::cout << "Strike deals damage, Dodge avoids damage, Heal restores HP, and The Totem buffs your next strike or saves you from defeat.\n";
-                pauseConsole();
+                HowToPlay();
                 continue;
             }
             case 4: {
