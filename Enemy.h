@@ -2,8 +2,9 @@
 #include <vector>
 #include <string>
 #include "Card.h"
-#include "Player.h"
 #include "Deck.h"
+
+struct Player;
 
 struct Enemy {
     int hp = 3;
@@ -25,6 +26,7 @@ struct Enemy {
     bool hasEightTrigrams = false;
 
     Enemy();
+    ~Enemy();
     void startDraw();
     void drawOne();
     void discardHandToDeck();
@@ -37,3 +39,4 @@ struct Enemy {
     void regenerate();
     bool respondToAttack();
 };
+
