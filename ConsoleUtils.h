@@ -26,77 +26,77 @@ const int space_key_idx=32;
 const int backspace_key_idx=8;
 const int delete_key_idx=127;
 
+// Function: Checks if a key code is a pause action
+// Input: key - the key code to check
+// Output: true if key is Escape or Space
 inline bool isPauseKey(int key) {
     return key == esc_key_idx || key == space_key_idx;
 }
 
-// Clear screen (Mac/Linux)
+// Function: Clears the console screen
 inline void clearScreen(){
     std::cout << "\033[2J\033[1;1H";
 }
 
-// Pause (wait for user)
+// Function: Pauses execution and waits for user to press Enter
 inline void pauseConsole(){
     std::cout << "Press Enter to continue...";
-    //std::cin.ignore();
     std::cin.get();
 }
 
+// Function: Clears input buffer then pauses, waits for Enter
 inline void pauseConsole2(){
     std::cout << "Press Enter to continue...";
     std::cin.ignore();
     std::cin.get();
 }
 
-// Sleep in milliseconds
+// Function: Suspends execution for specified milliseconds
+// Input: ms - number of milliseconds to sleep
 inline void sleepMs(int ms){
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 #ifndef _WIN32
+// RAII terminal manager for raw input mode on Unix systems
 struct Terminal{
     termios originalTerminal, raw;
 
+    // Function: Enables raw terminal mode for immediate key input without echo
     void enableRawMode(){
         tcgetattr(STDIN_FILENO, &originalTerminal);
 
         raw=originalTerminal;
-        //disable input flags
         raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-
-        //disable post-processing, output flag
         raw.c_oflag &= ~(OPOST);
-
-        //for 8 bit chars
         raw.c_cflag |= (CS8);
-        
-        //for echo, canonical form, signals, and extended input
         raw.c_lflag &= ~(ECHO|ICANON|IEXTEN|ISIG);
-
-        //default timing adjustment, no timeout (vtime=0), wait 1 bit after input (vmin=1)
-        //adjustable via setReadMode()
-        //setReadMode will assign all changes, so no need to setattr here
         setReadMode(1,0);
-
     }
 
+    // Function: Configures read timeout behavior for raw mode
+    // Input: vmin - minimum characters to read
+    // Input: vtime - timeout in deciseconds
     void setReadMode(int vmin, int vtime){
         raw.c_cc[VMIN]=vmin;
         raw.c_cc[VTIME]=vtime;
         tcsetattr(STDIN_FILENO, TCSANOW, &raw);
     }
 
+    // Function: Restores original terminal settings
     void disableRawMode(){
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &originalTerminal);
     }
 
-    //RAII, restore terminal upon destruction so it is not stuck in raw mode
+    // Function: Destructor ensures terminal is restored to normal mode
     ~Terminal() {
         disableRawMode();
     }
 };
 #endif
 
+// Function: Reads a single key press from console, handling arrow keys
+// Output: key code integer for the pressed key
 inline int getKey(){
 #ifdef _WIN32
     int c = _getch();
@@ -139,6 +139,10 @@ inline int getKey(){
 #endif
 }
 
+// Function: Reads a line of numeric input with pause support
+// Input: out - reference to store the input string
+// Input: paused - reference to set if user pressed pause key
+// Output: true if Enter pressed, false if paused
 inline bool readLineWithPauseSupport(std::string& out, bool& paused) {
     out.clear();
     paused = false;
@@ -164,10 +168,11 @@ inline bool readLineWithPauseSupport(std::string& out, bool& paused) {
             std::cout << static_cast<char>(key);
             continue;
         }
-        // ignore other keys
     }
 }
 
+// Function: Gets the current terminal window width
+// Output: terminal width in characters, defaults to 80
 inline int getTerminalWidth(){
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -185,11 +190,13 @@ inline int getTerminalWidth(){
 #include "Player.h"
 #include "Enemy.h"
 
+// Function: Displays health bars for both player and enemy with borders
+// Input: player - reference to player object for HP display
+// Input: enemy - reference to enemy object for HP display
 inline void displayHealthBar(Player& player, Enemy& enemy) {
-    std::cout << "\033[0m"; // Reset colors
+    std::cout << "\033[0m";
     int width = getTerminalWidth();
     
-    // Create health bar
     std::string playerBar = "Player: ";
     for (int i = 0; i < player.max_hp; i++) {
         playerBar += (i < player.hp) ? "# " : "_ ";
@@ -202,7 +209,6 @@ inline void displayHealthBar(Player& player, Enemy& enemy) {
     }
     enemyBar += " [" + std::to_string(enemy.hp) + "/" + std::to_string(enemy.max_hp) + "]";
     
-    // Print borders and health
     std::cout << std::string(width, '=') << std::endl;
     std::cout << playerBar << std::endl;
     std::cout << enemyBar << std::endl;
